@@ -1,0 +1,8 @@
+# 隐身铁律（c18）：开源仓零核心痕迹——以下文件仅本地测试用，永不推送
+tests/fixtures/world_tree.json
+world-editor.html
+
+# 常规
+node_modules/
+*.log
+.DS_Store
