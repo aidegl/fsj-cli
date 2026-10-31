@@ -6,3 +6,8 @@ world-editor.html
 node_modules/
 *.log
 .DS_Store
+
+# 密钥（只本地，永不进仓）
+minimax.json
+n8n-secret.json
+ws.json
