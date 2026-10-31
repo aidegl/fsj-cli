@@ -16,8 +16,8 @@ const PAGE = join(HERE, 'world-editor.html');
 
 // ===== 沙箱开关（10-28 东城令）：默认关=只许三根内；开=可访问授权根之外（越界访问全留痕） =====
 const SBX = join(TREES, 'sandbox.json');
-let sandboxOpen = false;
-try { if (existsSync(SBX)) sandboxOpen = JSON.parse(readFileSync(SBX, 'utf8')).allowOutside === true; } catch (e) {}
+let sandboxOpen = true;   // 默认不限制（10-31 东城令）：沙箱默认开放，sandbox.json 显式 allowOutside:false 才关
+try { if (existsSync(SBX)) sandboxOpen = JSON.parse(readFileSync(SBX, 'utf8')).allowOutside !== false; } catch (e) {}
 const setSandbox = (v) => { sandboxOpen = v === true; try { mkdirSync(TREES, { recursive: true }); writeFileSync(SBX, JSON.stringify({ allowOutside: sandboxOpen }, null, 2), 'utf8'); } catch (e) {} console.log('[sandbox] ' + (sandboxOpen ? '开启（越界访问将逐条留痕）' : '关闭')); };
 
 // ===== id 全局定位（TREE-SPEC v0.2 §7.2）：索引缓存 + 全盘扫 frontmatter =====
@@ -45,6 +45,47 @@ const qiviWSConnect = () => {
   } catch (e) { console.log('[qivi-ws] 连接失败：' + e.message); setTimeout(qiviWSConnect, 5000); }
 };
 qiviWSConnect();
+
+// ===== 提案通道（10-31 东城令 → 同日简化：纯 JSON 轮询，无 WS——历史文件即队列，pending=有 proposed 无 decided）
+const todayStr = () => new Date().toISOString().slice(0, 10);
+const resolveTreeFile = (name) => {                     // 复用 /api/tree 的正身解析：注册表优先
+  const reg = loadRegistry();
+  if (reg[name]) return reg[name];
+  const n = String(name).replace(/[^\w一-鿿-]/g, '');
+  const f = join(TREES, n + '.json');
+  return f.startsWith(TREES + sep) ? f : null;
+};
+const findNode = (root, id) => {
+  if (root.id === id) return root;
+  for (const c of root.children || []) { const r = findNode(c, id); if (r) return r; }
+  return null;
+};
+const applyOp = (op) => {                               // op: add/update/delete/move——单写通道，服务端落树
+  const f = resolveTreeFile(op.tree);
+  if (!f || !existsSync(f)) throw new Error('树不存在：' + op.tree);
+  const root = JSON.parse(readFileSync(f, 'utf8'));
+  const touch = (n) => { n.utime = todayStr(); };
+  if (op.op === 'add') {
+    const p = findNode(root, op.parentId); if (!p) throw new Error('父节点不存在：' + op.parentId);
+    const exist = findNode(root, op.node.id);                /*返工：同 id 已存在=替换不重复建（10-31）*/
+    if (exist) { const cut = (n) => { const ch = n.children || []; const i2 = ch.findIndex(c => c.id === op.node.id); if (i2 >= 0) { ch.splice(i2, 1); return true; } return ch.some(cut); }; cut(root); }
+    p.children = p.children || []; p.children.push(op.node); touch(p); touch(op.node);
+  } else if (op.op === 'update') {
+    const n = findNode(root, op.id); if (!n) throw new Error('节点不存在：' + op.id);
+    Object.assign(n, op.fields); touch(n);
+  } else if (op.op === 'delete') {
+    const cut = (n) => { const ch = n.children || []; const i = ch.findIndex(c => c.id === op.id); if (i >= 0) { ch.splice(i, 1); return true; } return ch.some(cut); };
+    if (!cut(root)) throw new Error('节点不存在：' + op.id);
+  } else if (op.op === 'move') {
+    const n = findNode(root, op.id); const old = findNode(root, op.newParentId); if (!n || !old) throw new Error('节点不存在');
+    const cut2 = (x) => { const ch = x.children || []; const i = ch.findIndex(c => c.id === op.id); if (i >= 0) { ch.splice(i, 1); return true; } return ch.some(cut2); };
+    cut2(root); (old.children = old.children || []).push(n); touch(n); touch(old);
+  } else throw new Error('未知 op：' + op.op);
+  writeFileSync(f, JSON.stringify(root, null, 2), 'utf8');
+  return true;
+};
+const PROPOSAL_LOG = 'D:/Item/fsj/tmp-api/proposal-results.jsonl';
+
 
 
 const persistIdx = () => { try { writeFileSync(IDX, JSON.stringify(idIndex, null, 2), 'utf8'); } catch (e) {} };
@@ -284,6 +325,51 @@ createServer(async (req, res) => {
       });
       return;
     }
+    if (u.pathname === '/api/proposal' && req.method === 'POST') {  // agent 推提案：只落档，编辑器轮询历史即取（纯 JSON，无 WS）
+      let b = ''; req.on('data', c => b += c);
+      req.on('end', () => {
+        try {
+          const j = JSON.parse(b);
+          if (!Array.isArray(j.items) || !j.items.length) return send(res, 400, '{"error":"items 不能为空"}');
+          const id = 'pp' + Date.now().toString(36);
+          appendFileSync(PROPOSAL_LOG, JSON.stringify({ t: new Date().toISOString(), event: 'proposed', id, from: j.from || 'agent', question: String(j.question || ''), items: j.items }) + '\n');
+          return send(res, 200, JSON.stringify({ ok: true, id }));
+        } catch (e) { return send(res, 500, JSON.stringify({ error: String(e.message || e) })); }
+      });
+      return;
+    }
+    if (u.pathname === '/api/proposal-result' && req.method === 'POST') {  // 编辑器回传人审结果：批准项服务端落树，全部留痕
+      let b = ''; req.on('data', c => b += c);
+      req.on('end', () => {
+        try {
+          const j = JSON.parse(b);
+          const results = [];
+          for (const d of (j.decisions || [])) {
+            let applied = false, error = null;
+            if (d.action === 'approve') { try { applyOp(d.op); applied = true; } catch (e) { error = String(e.message || e); } }
+            results.push({ itemId: d.itemId, title: d.title, action: d.action, text: d.text || '', applied, error });
+          }
+          appendFileSync(PROPOSAL_LOG, JSON.stringify({ t: new Date().toISOString(), event: 'decided', id: j.id, results }) + '\n');
+          return send(res, 200, JSON.stringify({ ok: true, results }));
+        } catch (e) { return send(res, 500, JSON.stringify({ error: String(e.message || e) })); }
+      });
+      return;
+    }
+    if (u.pathname === '/api/proposal-history' && req.method === 'GET') {  // 提案留痕回溯：proposed+decided 按 id 合并；只留最近3天，顺手裁日志（10-31 东城定）
+      let rows = [];
+      try { rows = readFileSync(PROPOSAL_LOG, 'utf8').split('\n').filter(Boolean).map(l => { try { return JSON.parse(l); } catch (e) { return null; } }).filter(Boolean); } catch (e) {}
+      const cutoff = Date.now() - 3 * 864e5;
+      const fresh = rows.filter(r => r.t && Date.parse(r.t) >= cutoff);
+      if (fresh.length !== rows.length) { try { writeFileSync(PROPOSAL_LOG, fresh.map(r => JSON.stringify(r)).join('\n') + '\n', 'utf8'); } catch (e) {} }
+      rows = fresh;
+      const byId = new Map();
+      for (const r of rows) {
+        if (r.event === 'proposed') byId.set(r.id, { id: r.id, t: r.t, question: r.question, from: r.from, items: r.items, results: null });
+        if (r.event === 'decided') { const e = byId.get(r.id); if (e) e.results = r.results; }
+      }
+      const all = [...byId.values()];
+      return send(res, 200, JSON.stringify(all));   // results 为 null = 待批
+    }
     if (u.pathname === '/' || u.pathname === '/world-editor.html') {
       return send(res, 200, readFileSync(PAGE, 'utf8'), 'text/html; charset=utf-8');
     }
@@ -296,4 +382,4 @@ createServer(async (req, res) => {
   } finally {
     console.log(`[${new Date().toTimeString().slice(0, 8)}] ${req.method} ${req.url.slice(0, 120)}`);
   }
-}).listen(PORT, () => console.log(`world-editor 同步服务 v2 → http://localhost:${PORT}\n  树目录：${TREES}\n  文档根：${ROOTS.join(' | ')}`));
+}).listen(PORT, () => console.log(`world-editor 同步服务 v2 → http://localhost:${PORT}\n  树目录：${TREES}\n  文档根：${ROOTS.join(' | ')}\n  提案通道：ws://localhost:${PORT}/ws`));

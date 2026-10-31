@@ -1,0 +1,15 @@
+{
+  "name": "fsj-cli",
+  "version": "0.1.0",
+  "description": "FSJ 世界接入器：agent 的无意识层 + 上下文快路（boot 预制提示词 / get 直取 / find 索引 / decode 五事 / log / flow）",
+  "type": "module",
+  "bin": {
+    "fsj": "./bin/fsj.mjs"
+  },
+  "scripts": {
+    "start": "node bin/fsj.mjs"
+  },
+  "dependencies": {
+    "ws": "^8.22.0"
+  }
+}
