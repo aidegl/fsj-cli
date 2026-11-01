@@ -9,7 +9,7 @@
 const http = require('http');
 const { WebSocketServer } = require('ws');
 
-const PORT = 8080;
+const PORT = Number(process.env.WS_PORT) || 8080;
 const WS_TOKEN = process.env.WS_TOKEN || '';
 let nextId = 1;
 const clients = new Map();   // ws -> {id}
