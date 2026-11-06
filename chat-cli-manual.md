@@ -31,7 +31,7 @@ aliases: [zsfy团队聊天CLI说明书, 团队聊天CLI说明书, chat命令手�
 | 命令 | 干什么 | 例 |
 |---|---|---|
 | `fsj chat who` | 查通讯录（编号+名字+rowid），寻址靠它 | `fsj chat who` |
-| `fsj chat send <对方> <正文>` | 发私聊。对方=**编号优先**（省token），中文名或 rowid 也认 | `fsj chat send 3 祁总，M2 方案初稿好了` |
+| `fsj chat send <对方> <正文>` | 发私聊。对方=**rowid 或全名**（编号会漂移勿用） | `fsj chat send 林东城 方案初稿好了` |
 | `fsj chat read <对方> [--last N]` | 读最近消息（默认20条，时间升序） | `fsj chat read 3 --last 5` |
 | `fsj chat list` | 列我的全部会话 | `fsj chat list` |
 | `fsj chat gnew <群名> <成员...>` | 建群（自己自动入群） | `fsj chat gnew 技术小分队 51 3` |
@@ -40,7 +40,7 @@ aliases: [zsfy团队聊天CLI说明书, 团队聊天CLI说明书, chat命令手�
 | `fsj chat gadd <群名> <成员...>` | 拉人入群（写后逐人抽验） | `fsj chat gadd 技术小分队 97` |
 | `fsj chat gdel <群名> <成员...>` | 移人出群（需已有本地底稿） | `fsj chat gdel 技术小分队 97` |
 
-- **寻址顺序：编号 → 中文名 → rowid**。编号查 `fsj chat who`；常用几个人记住编号最快（慕容风=51）。
+- **寻址顺序：rowid > 中文名**。⚠ **编号已退出寻址**（11-06 事故：编号是位次不是身份，入库/挪座会漂移串人——慕容风 51 曾变杨秀清）——`fsj chat who` 里编号仅作显示参考，发消息用 rowid 或全名。
 - **私聊不用管"会话"**：第一次发会自动建会话房间，之后自动复用，你永远只写"发给谁"。
 
 ## 三、纪律（违反=事故，全队适用）

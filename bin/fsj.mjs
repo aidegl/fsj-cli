@@ -30,7 +30,7 @@ try {
     stamp(performance.now() - t0);
     json ? outJson(hits) : console.log(`【find "${arg}"】${hits.length} 命中\n` + hits.map(r => `- [w${r.weight}] ${r.title}（${DIM[r.dimension] || r.dimension}维 · ${r.rowid}）`).join('\n'));
   } else if (cmd === 'chat') {
-    // chat 动词族（11-06 东城令）：send/list/read/who —— 一切皆群，私聊=两人的群，寻址编号优先
+    // chat 动词族（11-06 东城令）：send/list/read/who —— 一切皆群，私聊=两人的群，寻址 rowid/全名（编号已弃用防漂移）
     const { identity, send, listMine, read, contacts, createGroup, sendGroup, readGroup, groupAdd, groupRemove } = await import('../src/chat.mjs');
     const [verb, target, ...msgParts] = rest;
     if (verb === 'send') {
@@ -77,7 +77,7 @@ try {
     } else if (verb === 'who') {
       const list = await contacts(rest[0] === '--fresh');
       stamp(performance.now() - t0);
-      json ? outJson(list) : console.log(`【chat who】通讯录 ${list.length} 人（编号优先寻址）\n` + list.map(x => `${x.no || '—'}\t${x.name}\t${x.rowid}`).join('\n'));
+      json ? outJson(list) : console.log(`【chat who】通讯录 ${list.length} 人（编号仅显示，寻址用 rowid/全名）\n` + list.map(x => `${x.no || '—'}\t${x.name}\t${x.rowid}`).join('\n'));
     } else {
       console.error(`fsj chat: 未知动词 "${verb || ''}"。用法：\n` + [
         '  fsj chat send <编号|中文名|rowid> <正文>',

@@ -67,10 +67,11 @@ export async function contacts(force = false) {
 }
 export async function resolve(target) {
   const t = String(target).trim();
-  if (/^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(t)) return { rowid: t, name: t.slice(0, 8) };  // rowid 直用
+  if (/^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(t)) return { rowid: t, name: t.slice(0, 8) };  // rowid 唯一锚点（11-06 判例：身份永远按 rowid）
   const list = await contacts();
-  const hit = list.find(x => x.no === t) || list.find(x => x.name === t);              // 编号优先，中文名兜底
-  if (!hit) throw new Error(`通讯录没有「${t}」——用 fsj chat who 查编号，或直接给 rowid`);
+  // ⚠ 编号已退出寻址（11-06 事故：座次漂移 51=慕容风→杨秀清，编号串人）——编号仅显示
+  const hit = list.find(x => x.name === t);
+  if (!hit) throw new Error(`通讯录没有「${t}」——用 fsj chat who 查名字，或直接给 rowid（编号会随座次漂移，勿用于寻址）`);
   return hit;
 }
 
