@@ -31,7 +31,7 @@ try {
     json ? outJson(hits) : console.log(`【find "${arg}"】${hits.length} 命中\n` + hits.map(r => `- [w${r.weight}] ${r.title}（${DIM[r.dimension] || r.dimension}维 · ${r.rowid}）`).join('\n'));
   } else if (cmd === 'chat') {
     // chat 动词族（11-06 东城令）：send/list/read/who —— 一切皆群，私聊=两人的群，寻址编号优先
-    const { identity, send, listMine, read, contacts } = await import('../src/chat.mjs');
+    const { identity, send, listMine, read, contacts, createGroup, sendGroup, readGroup } = await import('../src/chat.mjs');
     const [verb, target, ...msgParts] = rest;
     if (verb === 'send') {
       const me = identity();
@@ -42,19 +42,46 @@ try {
       const me = identity();
       const rows = await listMine(me);
       stamp(performance.now() - t0);
-      json ? outJson(rows) : console.log(`【chat list】我（${me.name}）的会话 ${rows.length} 个\n` + rows.map(r => `- ${r.name}（${r.type || '?'} · ${r.rowid}）`).join('\n'));
+      json ? outJson(rows) : console.log(`【chat list】我（${me.name}）的会话 ${rows.length} 个\n` + rows.map(r => `- ${r.name}（${r.type || '未分类'} · ${r.rowid.slice(0, 8)}…）`).join('\n'));
     } else if (verb === 'read') {
       const me = identity();
       const lastN = (() => { const i = rest.indexOf('--last'); return i >= 0 ? +rest[i + 1] : 20; })();
       const rows = await read(me, target, lastN);
       stamp(performance.now() - t0);
       json ? outJson(rows) : console.log(`【chat read】${target} 最近 ${rows.length} 条\n` + rows.map(r => `[${r.at}] ${r.from}: ${r.text.slice(0, 60)}${r.text.length > 60 ? '…' : ''}`).join('\n'));
+    } else if (verb === 'gnew') {
+      const me = identity();
+      if (!target || !msgParts.length) { console.error('用法：fsj chat gnew <群名> <成员编号|名字...>（自己自动入群）'); process.exit(2); }
+      const r = await createGroup(me, target, msgParts);
+      stamp(performance.now() - t0);
+      json ? outJson(r) : console.log(`【chat gnew】群「${r.name}」已建（${r.sid.slice(0, 8)}…）\n成员 ${r.members.length} 人：${r.members.join('、')}`);
+    } else if (verb === 'gsend') {
+      const me = identity();
+      if (!target || !msgParts.length) { console.error('用法：fsj chat gsend <群名> <正文>'); process.exit(2); }
+      const r = await sendGroup(me, target, msgParts.join(' '));
+      stamp(performance.now() - t0);
+      json ? outJson(r) : console.log(`【chat gsend】→ 群「${target}」｜消息 ${r.msgId}`);
+    } else if (verb === 'gread') {
+      const lastN = (() => { const i = rest.indexOf('--last'); return i >= 0 ? +rest[i + 1] : 20; })();
+      if (!target) { console.error('用法：fsj chat gread <群名> [--last N]'); process.exit(2); }
+      const rows = await readGroup(target, lastN);
+      stamp(performance.now() - t0);
+      json ? outJson(rows) : console.log(`【chat gread】群「${target}」最近 ${rows.length} 条\n` + rows.map(r => `[${r.at}] ${r.from}: ${r.text.slice(0, 60)}${r.text.length > 60 ? '…' : ''}`).join('\n'));
     } else if (verb === 'who') {
       const list = await contacts(rest[0] === '--fresh');
       stamp(performance.now() - t0);
       json ? outJson(list) : console.log(`【chat who】通讯录 ${list.length} 人（编号优先寻址）\n` + list.map(x => `${x.no || '—'}\t${x.name}\t${x.rowid}`).join('\n'));
     } else {
-      console.log('fsj chat — 聊天命令族（私聊协议 v2.0）\n用法：fsj chat send <编号|rowid> <正文> | list | read <编号|rowid> [--last N] | who [--fresh]');
+      console.error(`fsj chat: 未知动词 "${verb || ''}"。用法：\n` + [
+        '  fsj chat send <编号|中文名|rowid> <正文>',
+        '  fsj chat read <编号|中文名|rowid> [--last N]',
+        '  fsj chat list',
+        '  fsj chat who [--fresh]',
+        '  fsj chat gnew <群名> <成员编号|名字...>',
+        '  fsj chat gsend <群名> <正文>',
+        '  fsj chat gread <群名> [--last N]',
+      ].join('\n'));
+      process.exit(2);
     }
   } else if (cmd === 'decode' || cmd === 'log' || cmd === 'flow') {
     console.error(`fsj ${cmd}：M2 实现（PR 第 9 节里程碑），先跑 boot/get/find`);

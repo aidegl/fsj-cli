@@ -37,10 +37,11 @@ function parseFrontmatter(mdPath) {
 export function identity(cwd = process.cwd()) {
   let dir = String(cwd).replace(/\\/g, '/').replace(/\/+$/, '');
   for (;;) {
-    const fm = parseFrontmatter(dir + '/CLAUDE.md');
+    // CLAUDE.md 与 AGENTS.md 双认（11-06 新手组反馈：108 体系已全面迁 AGENTS.md）
+    const fm = parseFrontmatter(dir + '/CLAUDE.md') || parseFrontmatter(dir + '/AGENTS.md');
     if (fm && fm.rowid) return fm;
     const i = dir.lastIndexOf('/');
-    if (i <= 0) throw new Error('身份未登记：cwd 向上没找到带 usr_rowid 的 CLAUDE.md');
+    if (i <= 0) throw new Error('身份未登记：cwd 向上没找到带 usr_rowid 的 CLAUDE.md/AGENTS.md');
     dir = dir.slice(0, i);
   }
 }
@@ -128,7 +129,79 @@ async function findOrCreatePrivate(a, b) {
   return id;
 }
 
-// ---------- 动词 ----------
+// ---------- 群聊（11-06 东城令开放：建群/发群/读群；一切皆群，私聊只是两人的群） ----------
+async function findGroup(name) {
+  const fr = await post('https://api.mingdao.com/v2/open/worksheet/getFilterRows', {
+    worksheetId: ORG, pageSize: 5, pageIndex: 1, listType: 0,
+    controls: ['rowid', 'mingcheng', 'zzyh'],
+    filters: [
+      { controlId: 'mingcheng', dataType: 1, spliceType: 1, filterType: 1, value: name },
+      { controlId: 'ltlx', dataType: 1, spliceType: 1, filterType: 1, value: '群聊' },
+    ],
+  });
+  return (fr.data && fr.data.rows) || [];
+}
+export async function createGroup(me, name, memberTargets) {
+  const dup = await findGroup(name);
+  if (dup.length) throw new Error(`群「${name}」已存在（${dup[0].rowid.slice(0, 8)}…）——发消息直接 gsend，勿重复建群`);
+  const members = [me];
+  for (const t of memberTargets) {
+    const p = await resolve(t);
+    if (!members.some(m => m.rowid === p.rowid)) members.push(p);
+  }
+  const cr = await post('https://api.mingdao.com/v2/open/worksheet/addRow', {
+    worksheetId: ORG, triggerWorkflow: false,
+    controls: [
+      { controlId: 'mingcheng', value: name },
+      { controlId: 'leixing', value: K_LEIXING_CHAT, valueType: 2 },
+      { controlId: 'ltlx', value: K_LTLX_GROUP, valueType: 2 },
+      { controlId: 'fabuzhe', value: me.rowid, valueType: 2 },
+      { controlId: 'zzyh', value: members.map(m => m.rowid).join(','), valueType: 2 },
+    ],
+  });
+  const id = typeof cr.data === 'string' ? cr.data : cr.data && cr.data.rowid;
+  if (!id) throw new Error('建群失败:' + JSON.stringify(cr).slice(0, 150));
+  return { sid: id, name, members: members.map(m => m.name || m.rowid.slice(0, 8)) };
+}
+async function publishTo(me, sid, text) {
+  const add = await post('https://api.mingdao.com/v2/open/worksheet/addRow', {
+    worksheetId: DATA, triggerWorkflow: false,
+    controls: [
+      { controlId: 'title', value: text },
+      { controlId: 'kind', value: '交流', valueType: 2 },
+      { controlId: 'dimension', value: '4交流', valueType: 2 },
+      { controlId: 'permission_tags', value: K_PT_ORG, valueType: 2 },
+      { controlId: 'visible_org', value: sid, valueType: 2 },
+      { controlId: 'publisher', value: me.rowid, valueType: 2 },
+      { controlId: 'published_at', value: now() },
+      { controlId: 'org', value: SJ, valueType: 2 },
+    ],
+  });
+  const id = typeof add.data === 'string' ? add.data : add.data && add.data.rowid;
+  if (!id) throw new Error('发消息失败:' + JSON.stringify(add).slice(0, 150));
+  return id;
+}
+export async function sendGroup(me, groupName, text) {
+  const rows = await findGroup(groupName);
+  if (!rows.length) throw new Error(`群「${groupName}」不存在——gnew 先建，或核对群名`);
+  return { sid: rows[0].rowid, msgId: await publishTo(me, rows[0].rowid, text) };
+}
+export async function readGroup(groupName, last = 20) {
+  const rows = await findGroup(groupName);
+  if (!rows.length) throw new Error(`群「${groupName}」不存在`);
+  const fr = await post('https://api.mingdao.com/v2/open/worksheet/getFilterRows', {
+    worksheetId: DATA, pageSize: last, pageIndex: 1, listType: 0,
+    controls: ['rowid', 'title', 'publisher', 'published_at'],
+    filters: [
+      { controlId: 'visible_org', dataType: 29, spliceType: 1, filterType: 24, value: rows[0].rowid },
+      { controlId: 'dimension', dataType: 1, spliceType: 1, filterType: 1, value: '4交流' },
+    ],
+    sortId: 'published_at',  // 降序（isAsc:true 会使查询异常，实测 11-06）
+  });
+  const pub = (v) => { try { const o = typeof v === 'string' ? JSON.parse(v) : v; return (o && (o.name || (o[0] && o[0].name))) || '?'; } catch (e) { return '?'; } };
+  return ((fr.data && fr.data.rows) || []).slice(0, last).reverse()
+    .map(x => ({ at: x.published_at, from: pub(x.publisher), text: x.title }));
+}
 export async function send(me, target, text) {
   const peer = await resolve(target);
   const sid = await findOrCreatePrivate(me, peer);

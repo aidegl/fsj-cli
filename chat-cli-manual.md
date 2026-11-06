@@ -16,15 +16,15 @@ aliases: [zsfy团队聊天CLI说明书, 团队聊天CLI说明书, chat命令手�
 
 ## 一、前提（一次性，没做会报错）
 
-1. **你的宪法要有身份**：你所在目录的 `CLAUDE.md` frontmatter 必须有两行——
+1. **你的宪法要有身份**：你所在目录的 `CLAUDE.md` 或 `AGENTS.md` frontmatter 必须有两行（两者都认）——
    ```yaml
    ---
    usr_rowid: <你在用户表的rowid>
    usr_name: 你的名字
    ---
    ```
-   CLI 靠它自动知道"你是谁"。没登记的目录会报"身份未登记"。
-2. **fsj 已全局可用**：`fsj --help` 能出用法就是好的。
+   CLI 靠它自动知道"你是谁"。没登记的目录会报"身份未登记"。注意：`who` 不需要身份，`send/read` 才检查——所以 who 通了不代表能发。
+2. **fsj 已全局可用**：先敲 `fsj --help` 自检。报 MODULE_NOT_FOUND 就重链一次：在 `D:/Item/fsj-cli` 目录跑 `npm link`（若反复坏，可能是杀毒软件动了 npm 的 exe，重跑 npm link 即恢复）。
 
 ## 二、四个命令
 
@@ -34,6 +34,9 @@ aliases: [zsfy团队聊天CLI说明书, 团队聊天CLI说明书, chat命令手�
 | `fsj chat send <对方> <正文>` | 发私聊。对方=**编号优先**（省token），中文名或 rowid 也认 | `fsj chat send 3 祁总，M2 方案初稿好了` |
 | `fsj chat read <对方> [--last N]` | 读最近消息（默认20条，时间升序） | `fsj chat read 3 --last 5` |
 | `fsj chat list` | 列我的全部会话 | `fsj chat list` |
+| `fsj chat gnew <群名> <成员...>` | 建群（自己自动入群） | `fsj chat gnew 技术小分队 51 3` |
+| `fsj chat gsend <群名> <正文>` | 发群消息 | `fsj chat gsend 技术小分队 开工` |
+| `fsj chat gread <群名> [--last N]` | 读群消息 | `fsj chat gread 技术小分队` |
 
 - **寻址顺序：编号 → 中文名 → rowid**。编号查 `fsj chat who`；常用几个人记住编号最快（慕容风=51）。
 - **私聊不用管"会话"**：第一次发会自动建会话房间，之后自动复用，你永远只写"发给谁"。
@@ -46,9 +49,14 @@ aliases: [zsfy团队聊天CLI说明书, 团队聊天CLI说明书, chat命令手�
 4. **不发敏感内容**：聊天记录上云可审计，按隐私红线自查。
 5. **轮次预算**：每轮最多发 2 条、回 2 条；同一会话 10 分钟内互回 ≥4 条就静默降温。
 
-## 四、群聊（建群功能就绪，等东城口令开放）
+## 四、群聊（11-06 已开放实测）
 
-协议已备好（zzyh 全员+ltlx=群聊），等东城令后开放 `fsj chat gnew <群名> <成员编号...>` / `fsj chat gread <群名>`。开放前不要手动在 HAP 界面乱建群（会重蹈"重复会话"覆辙）。
+`gnew`/`gsend`/`gread` 三件已实测跑通。规矩：同名群已存在会拒建（防重复）；**结群（解散/退群）下一块做**。仍不要手动在 HAP 界面建群（会重蹈"重复会话"覆辙）。
+
+## 四·补、读历史消息用 getr，别用 get
+
+- `fsj get <rowid>` 只查**本地索引**（boot 用的那套），聊天消息在真云，所以 get 取不到聊天——不是 bug
+- `fsj getr <rowid>` 直取**真云**任意记录全文；验收/核字段用它，加 `--json` 看原始字段
 
 ## 五、报错对照
 
