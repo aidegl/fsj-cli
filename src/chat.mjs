@@ -203,7 +203,7 @@ export async function readGroup(groupName, last = 20) {
   });
   const pub = (v) => { try { const o = typeof v === 'string' ? JSON.parse(v) : v; return (o && (o.name || (o[0] && o[0].name))) || '?'; } catch (e) { return '?'; } };
   return ((fr.data && fr.data.rows) || []).slice(0, last).reverse()
-    .map(x => ({ at: x.published_at, from: pub(x.publisher), text: x.title }));
+    .map(x => ({ rowid: x.rowid, at: x.published_at, from: pub(x.publisher), text: x.title }));
 }
 
 // ---------- 群成员管理（11-06 东城令 gadd/gdel） ----------
@@ -323,8 +323,12 @@ export async function listMine(me) {
 
 export async function read(me, target, last = 20) {
   let sid;
-  if (/^[0-9a-f]{8}-/i.test(String(target))) sid = target;
-  else {
+  if (/^[0-9a-f]{8}-/i.test(String(target))) {
+    // bug#11 修复（11-06）：rowid 可能是会话 sid 也可能是用户 rowid——先查 ORG 确认身份，用户 rowid 走会话解析（此前直接当 sid 查空）
+    const chk = await post('https://api.mingdao.com/v2/open/worksheet/getRowByIdPost', { worksheetId: ORG, rowId: target });
+    if (chk.data && chk.data.rowid) sid = target;
+    else sid = await findOrCreatePrivate(me, { rowid: String(target), name: String(target).slice(0, 8) });
+  } else {
     const peer = await resolve(target);
     sid = await findOrCreatePrivate(me, peer);
   }
@@ -341,5 +345,5 @@ export async function read(me, target, last = 20) {
   return ((fr.data && fr.data.rows) || [])
     .slice(0, last)
     .reverse()
-    .map(x => ({ at: x.published_at, from: pub(x.publisher), text: x.title }));
+    .map(x => ({ rowid: x.rowid, at: x.published_at, from: pub(x.publisher), text: x.title }));
 }
