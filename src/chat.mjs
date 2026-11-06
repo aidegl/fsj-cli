@@ -31,7 +31,8 @@ function parseFrontmatter(mdPath) {
     const m = /^---\r?\n([\s\S]*?)\r?\n---/.exec(t);
     if (!m) return null;
     const get = (k) => { const r = new RegExp('^' + k + ':\\s*(.*)$', 'm').exec(m[1]); return r ? r[1].trim().replace(/\s+#.*$/, '').replace(/^["']|["']$/g, '') : ''; };  // 剥行内注释（11-06 事故：漏剥导致 rowid 带尾巴，全部查询失配）
-    return { rowid: get('usr_rowid'), name: get('usr_name') };
+    // 双键兼容（11-06 罗景澄回归发现）：usr_rowid（hook-hap 判例）优先，user_rowid（fsj4 全局 MD 规范）兜底
+    return { rowid: get('usr_rowid') || get('user_rowid'), name: get('usr_name') || get('user_name') };
   } catch (e) { return null; }
 }
 export function identity(cwd = process.cwd()) {
