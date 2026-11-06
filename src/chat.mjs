@@ -13,8 +13,9 @@ const K_LEIXING_CHAT = '61221926-f9e6-4941-847a-5625538dc120';  // leixing=聊�
 const K_PT_ORG = 'c5d60028-eb38-4f18-97a8-e8b96270757e';        // permission_tags=组织可见
 const K_LTLX_GROUP = 'c4ec054c-711d-4584-b12a-ebcafe959b7f';    // ltlx=群聊（getWorksheetInfo 实测 11-06；建群未实操）
 const SJ = 'f009cda3-cc49-400d-82cd-cbe79ee8892f';              // org=孚世界商家（必填）
-const CACHE = new URL('./workspace/contacts.json', 'file:///D:/Item/fsj-cli/').pathname;
-const SESSIONS = new URL('./workspace/chat-sessions.json', 'file:///D:/Item/fsj-cli/').pathname;
+const CACHE = 'D:/Item/fsj-cli/workspace/contacts.json';      // 纯字符串路径（11-06 坑：URL.pathname 在 Windows 生成 /D:/ → ENOENT，缓存静默写失败）
+const SESSIONS = 'D:/Item/fsj-cli/workspace/chat-sessions.json';
+const GMEMBERS = 'D:/Item/fsj-cli/workspace/chat-group-members.json';
 
 // 会话正身缓存（11-06 实测 HAP 关联过滤索引抖动，查重结果漂移）——正身确认一次即落盘，之后直用缓存绕开抖动
 const loadSessions = () => { try { return JSON.parse(readFileSync(SESSIONS, 'utf8')); } catch (e) { return {}; } };
@@ -202,6 +203,90 @@ export async function readGroup(groupName, last = 20) {
   const pub = (v) => { try { const o = typeof v === 'string' ? JSON.parse(v) : v; return (o && (o.name || (o[0] && o[0].name))) || '?'; } catch (e) { return '?'; } };
   return ((fr.data && fr.data.rows) || []).slice(0, last).reverse()
     .map(x => ({ at: x.published_at, from: pub(x.publisher), text: x.title }));
+}
+
+// ---------- 群成员管理（11-06 东城令 gadd/gdel） ----------
+// 两坑（无名 11-06 事故复盘，写代码必守）：
+//  坑1 editRow 对 zzyh 是整字段替换，value=逗号行id串，且【不带 valueType】（带则 10002 解析错）
+//  坑2 getFilterRows/getRowByIdPost 读 zzyh 只回前 50 条+有陈旧缓存——绝不能当写入底稿
+//  对策：本地成员底稿缓存（GMEMBERS）为唯一写入底稿；写后按成员 rowid 逐个反向抽验
+const loadGM = () => { try { return JSON.parse(readFileSync(GMEMBERS, 'utf8')); } catch (e) { return {}; } };
+const saveGM = (sid, sids) => { try { const s = loadGM(); s[sid] = sids; writeFileSync(GMEMBERS, JSON.stringify(s, null, 1)); } catch (e) {} };
+
+async function readZzyhSids(sid) {  // ⚠ 只回前≤50+可能陈旧，仅作底稿首建参考，必须提示截断风险
+  const g = await post('https://api.mingdao.com/v2/open/worksheet/getRowByIdPost', { worksheetId: ORG, rowId: sid });
+  const z = g.data && g.data.zzyh;
+  const o = typeof z === 'string' ? JSON.parse(z) : z;
+  return (Array.isArray(o) ? o : [o]).map(m => m.sid).filter(Boolean);
+}
+async function memberInGroup(memberRowid, sid) {  // 反向抽验：按成员查其会话列表看含不含本群（不受 50 截断影响）
+  for (let attempt = 0; attempt < 2; attempt++) {  // 索引抖动防抖：失败重查一次
+    const fr = await post('https://api.mingdao.com/v2/open/worksheet/getFilterRows', {
+      worksheetId: ORG, pageSize: 50, pageIndex: 1, listType: 0, controls: ['rowid'],
+      filters: [{ controlId: 'zzyh', dataType: 29, spliceType: 1, filterType: 24, value: memberRowid }],
+    });
+    const rows = (fr.data && fr.data.rows) || [];
+    if (rows.some(r => r.rowid === sid)) return true;
+    if (attempt === 0) await new Promise(r => setTimeout(r, 400));
+  }
+  return false;
+}
+
+export async function groupAdd(me, groupName, targets) {
+  const rows = await findGroup(groupName);
+  if (!rows.length) throw new Error(`群「${groupName}」不存在`);
+  const sid = rows[0].rowid;
+  const store = loadGM();
+  let base = store[sid];
+  let approximate = false;
+  if (!base) {  // 底稿首建：只能从 zzyh 读（可能截断），如实标注；读到即落盘（否则空增量时永远建不起来）
+    base = await readZzyhSids(sid);
+    approximate = true;
+    saveGM(sid, base);
+  }
+  const added = [];
+  const next = [...base];
+  for (const t of targets) {
+    const p = await resolve(t);
+    if (p.rowid === me.rowid) continue;
+    if (!next.includes(p.rowid)) { next.push(p.rowid); added.push(p); }
+  }
+  if (!added.length) throw new Error('没有新增成员（全部已在底稿中）');
+  // 坑1 姿势：整字段替换、逗号串、不带 valueType
+  const u = await post('https://api.mingdao.com/v2/open/worksheet/editRow', {
+    worksheetId: ORG, rowId: sid, triggerWorkflow: false,
+    controls: [{ controlId: 'zzyh', value: next.join(',') }],
+  });
+  if (!u.data) throw new Error('写 zzyh 失败:' + JSON.stringify(u).slice(0, 120));
+  // 抽验每个新增成员真实在群
+  const verified = [];
+  for (const p of added) if (await memberInGroup(p.rowid, sid)) verified.push(p.name || p.rowid.slice(0, 8));
+  saveGM(sid, next);
+  return { sid, added: added.map(p => p.name || p.rowid.slice(0, 8)), verified, approximate };
+}
+
+export async function groupRemove(me, groupName, targets) {
+  const rows = await findGroup(groupName);
+  if (!rows.length) throw new Error(`群「${groupName}」不存在`);
+  const sid = rows[0].rowid;
+  const store = loadGM();
+  const base = store[sid];
+  if (!base) throw new Error(`群「${groupName}」没有本地成员底稿——为防 zzyh 截断误删，请先 gadd 一次建立底稿，或手动维护`);
+  const removed = [];
+  for (const t of targets) {
+    const p = await resolve(t);
+    if (base.includes(p.rowid)) { base.splice(base.indexOf(p.rowid), 1); removed.push(p); }
+  }
+  if (!removed.length) throw new Error('没有移除任何成员（目标不在底稿中）');
+  const u = await post('https://api.mingdao.com/v2/open/worksheet/editRow', {
+    worksheetId: ORG, rowId: sid, triggerWorkflow: false,
+    controls: [{ controlId: 'zzyh', value: base.join(',') }],
+  });
+  if (!u.data) throw new Error('写 zzyh 失败:' + JSON.stringify(u).slice(0, 120));
+  const verified = [];
+  for (const p of removed) if (!(await memberInGroup(p.rowid, sid))) verified.push(p.name || p.rowid.slice(0, 8));
+  saveGM(sid, base);
+  return { sid, removed: removed.map(p => p.name || p.rowid.slice(0, 8)), verified };
 }
 export async function send(me, target, text) {
   const peer = await resolve(target);

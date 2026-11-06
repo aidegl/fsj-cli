@@ -37,6 +37,8 @@ aliases: [zsfy团队聊天CLI说明书, 团队聊天CLI说明书, chat命令手�
 | `fsj chat gnew <群名> <成员...>` | 建群（自己自动入群） | `fsj chat gnew 技术小分队 51 3` |
 | `fsj chat gsend <群名> <正文>` | 发群消息 | `fsj chat gsend 技术小分队 开工` |
 | `fsj chat gread <群名> [--last N]` | 读群消息 | `fsj chat gread 技术小分队` |
+| `fsj chat gadd <群名> <成员...>` | 拉人入群（写后逐人抽验） | `fsj chat gadd 技术小分队 97` |
+| `fsj chat gdel <群名> <成员...>` | 移人出群（需已有本地底稿） | `fsj chat gdel 技术小分队 97` |
 
 - **寻址顺序：编号 → 中文名 → rowid**。编号查 `fsj chat who`；常用几个人记住编号最快（慕容风=51）。
 - **私聊不用管"会话"**：第一次发会自动建会话房间，之后自动复用，你永远只写"发给谁"。
@@ -51,7 +53,11 @@ aliases: [zsfy团队聊天CLI说明书, 团队聊天CLI说明书, chat命令手�
 
 ## 四、群聊（11-06 已开放实测）
 
-`gnew`/`gsend`/`gread` 三件已实测跑通。规矩：同名群已存在会拒建（防重复）；**结群（解散/退群）下一块做**。仍不要手动在 HAP 界面建群（会重蹈"重复会话"覆辙）。
+`gnew`/`gsend`/`gread`/`gadd`/`gdel` 五件已实测跑通。**结群（解散/退群）下一块做**。仍不要手动在 HAP 界面建群/改群成员（会重蹈"重复会话/满员缩50"覆辙）。
+
+**群成员两条铁律**（11-06 zzyh 事故教训，gadd/gdel 已内置防御，手动操作必读）：
+1. HAP 的 editRow 对 zzyh（组织用户）是**整字段替换**——写入=全量名单逗号串，且**不带 valueType**（带则 10002 报错）；传 JSON 数组串会把成员表写成几百条垃圾
+2. 读 zzyh 只回**前 50 条**且有陈旧缓存——绝不能拿它当写入底稿（有人因此两次把满员群缩到 50）。CLI 用本地底稿（workspace/chat-group-members.json）+ 写后逐人反向抽验兜底
 
 ## 四·补、读历史消息用 getr，别用 get
 

@@ -31,7 +31,7 @@ try {
     json ? outJson(hits) : console.log(`【find "${arg}"】${hits.length} 命中\n` + hits.map(r => `- [w${r.weight}] ${r.title}（${DIM[r.dimension] || r.dimension}维 · ${r.rowid}）`).join('\n'));
   } else if (cmd === 'chat') {
     // chat 动词族（11-06 东城令）：send/list/read/who —— 一切皆群，私聊=两人的群，寻址编号优先
-    const { identity, send, listMine, read, contacts, createGroup, sendGroup, readGroup } = await import('../src/chat.mjs');
+    const { identity, send, listMine, read, contacts, createGroup, sendGroup, readGroup, groupAdd, groupRemove } = await import('../src/chat.mjs');
     const [verb, target, ...msgParts] = rest;
     if (verb === 'send') {
       const me = identity();
@@ -67,6 +67,13 @@ try {
       const rows = await readGroup(target, lastN);
       stamp(performance.now() - t0);
       json ? outJson(rows) : console.log(`【chat gread】群「${target}」最近 ${rows.length} 条\n` + rows.map(r => `[${r.at}] ${r.from}: ${r.text.slice(0, 60)}${r.text.length > 60 ? '…' : ''}`).join('\n'));
+    } else if (verb === 'gadd' || verb === 'gdel') {
+      const me = identity();
+      if (!target || !msgParts.length) { console.error(`用法：fsj chat ${verb} <群名> <成员编号|名字...>`); process.exit(2); }
+      const r = verb === 'gadd' ? await groupAdd(me, target, msgParts) : await groupRemove(me, target, msgParts);
+      stamp(performance.now() - t0);
+      const act = verb === 'gadd' ? '入群' : '移出';
+      json ? outJson(r) : console.log(`【chat ${verb}】群「${target}」\n${act}: ${r[verb === 'gadd' ? 'added' : 'removed'].join('、')}\n抽验${verb === 'gadd' ? '在群' : '已移出'}: ${r.verified.join('、') || '（未验到，重跑抽验）'}` + (r.approximate ? '\n⚠ 底稿为首建（HAP zzyh 只回前50，可能不全）——大群请谨慎，必要时手动核对' : ''));
     } else if (verb === 'who') {
       const list = await contacts(rest[0] === '--fresh');
       stamp(performance.now() - t0);
