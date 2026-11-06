@@ -164,7 +164,7 @@ export async function createGroup(me, name, memberTargets) {
   if (!id) throw new Error('建群失败:' + JSON.stringify(cr).slice(0, 150));
   return { sid: id, name, members: members.map(m => m.name || m.rowid.slice(0, 8)) };
 }
-async function publishTo(me, sid, text) {
+export async function publishTo(me, sid, text) {
   const add = await post('https://api.mingdao.com/v2/open/worksheet/addRow', {
     worksheetId: DATA, triggerWorkflow: false,
     controls: [
@@ -231,7 +231,7 @@ export async function listMine(me) {
     filters: [{ controlId: 'zzyh', dataType: 29, spliceType: 1, filterType: 24, value: me.rowid }],
   });
   return ((fr.data && fr.data.rows) || []).map(x => ({
-    rowid: x.rowid, name: x.mingcheng, type: (x.ltlx && x.ltlx.value) || (Array.isArray(x.ltlx) ? x.ltlx[0] : '') || '',
+    rowid: x.rowid, name: x.mingcheng, type: typeof x.ltlx === 'string' ? x.ltlx : (x.ltlx && (x.ltlx.value || (x.ltlx[0] && x.ltlx[0].name))) || '未分类',
   }));
 }
 
