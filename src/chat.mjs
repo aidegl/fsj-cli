@@ -116,6 +116,21 @@ async function findOrCreatePrivate(a, b) {
     saveSession(key, sid);
     return sid;
   }
+  // 全扫兜底（别名切换过渡期/索引抖动下过滤会间歇失灵，11-07 复发教训）：
+  // 拉我名下全部私聊行，逐条读 members 原始值解析 rowid 集合，与 {a,b} 集合精确相等才算命中（成员集合=唯一键）
+  const mine = await post('https://api.mingdao.com/v2/open/worksheet/getFilterRows', {
+    worksheetId: ORG, pageSize: 50, pageIndex: 1, listType: 0,
+    controls: ['rowid', 'members'],
+    filters: [{ controlId: 'members', dataType: 29, spliceType: 1, filterType: 24, value: a.rowid },
+              { controlId: 'chat_type', dataType: 1, spliceType: 1, filterType: 1, value: '私聊' }],
+  });
+  const mkey = [a.rowid, b.rowid].sort().join(',');
+  for (const row of ((mine.data && mine.data.rows) || [])) {
+    let sids = [];
+    try { const o = typeof row.members === 'string' ? JSON.parse(row.members) : row.members;
+      sids = (Array.isArray(o) ? o : [o]).map(m => m.sid).filter(Boolean); } catch (e) {}
+    if ([...new Set(sids)].sort().join(',') === mkey) return row.rowid;
+  }
   const cr = await post('https://api.mingdao.com/v2/open/worksheet/addRow', {
     worksheetId: ORG, triggerWorkflow: false,
     controls: [
@@ -323,7 +338,7 @@ export async function listMine(me) {
     filters: [{ controlId: 'members', dataType: 29, spliceType: 1, filterType: 24, value: me.rowid }],
   });
   return ((fr.data && fr.data.rows) || []).map(x => ({
-    rowid: x.rowid, name: x.name, type: typeof x.ltlx === 'string' ? x.ltlx : (x.ltlx && (x.ltlx.value || (x.ltlx[0] && x.ltlx[0].name))) || '未分类',
+    rowid: x.rowid, name: x.name, type: typeof x.chat_type === 'string' ? x.chat_type : (x.chat_type && (x.chat_type.value || (x.chat_type[0] && x.chat_type[0].name))) || '未分类',
   }));
 }
 
