@@ -347,3 +347,53 @@ export async function read(me, target, last = 20) {
     .reverse()
     .map(x => ({ rowid: x.rowid, at: x.published_at, from: pub(x.publisher), text: x.title }));
 }
+
+// ---------- 先机日志表（第二刀：独立表，写后必回读硬编码） ----------
+// 表 6aee7e5f0e75e0e58237903c（108龙虾世界应用）；采纳五值+采纳度+JF/VR拆账（东城 11-07 三条）
+export const LOG_WS = '6aee7e5f0e75e0e58237903c';
+export const LOG_CID = {
+  '预测时间': '6aee7e5f6117bcc66d33dcc8', mode: '6aee7e5f6117bcc66d33dcc9',
+  predicted_rowid: '6aee7e5f6117bcc66d33dcca', 预测内容: '6aee7e5f6117bcc66d33dccb',
+  链型: '6aee7e5f6117bcc66d33dccc', 置信度: '6aee7e5f6117bcc66d33dccd',
+  presented: '6aee7e5f6117bcc66d33dcce', presented_order: '6aee7e5f6117bcc66d33dccf',
+  采纳: '6aee7e5f6117bcc66d33dcd0', 采纳度: '6aee7e5f6117bcc66d33dcd1',
+  vetoed: '6aee7e5f6117bcc66d33dcd2', JF记分: '6aee7e5f6117bcc66d33dcd3',
+  VR否决度: '6aee7e5f6117bcc66d33dcd4', source_wikilink: '6aee7e5f6117bcc66d33dcd5',
+  session_id: '6aee7e5f6117bcc66d33dcd6', org: '6aee7e5f6117bcc66d33dcd7',
+};
+// 记一条预测（送达即写：mode=送达位，采纳后 editRow 回填采纳/采纳度/JF/VR——JF/VR 拆账：部分采纳 N% → JF=N%、VR=100-N%）
+export async function logPredict(me, e) {
+  const controls = [
+    { controlId: LOG_CID['预测时间'], value: e.ts || now() },
+    { controlId: LOG_CID.mode, value: e.mode || '正常' },
+    { controlId: LOG_CID.predicted_rowid, value: e.predicted_rowid || '' },
+    { controlId: LOG_CID['预测内容'], value: e.预测内容 || '' },
+    { controlId: LOG_CID['链型'], value: e.链型 || '' },
+    { controlId: LOG_CID['置信度'], value: String(e.置信度 ?? '') },
+    { controlId: LOG_CID.presented, value: e.presented === false ? 'false' : 'true' },
+    { controlId: LOG_CID.presented_order, value: String(e.presented_order ?? 1) },
+    { controlId: LOG_CID['source_wikilink'], value: e.source_wikilink || '' },
+    { controlId: LOG_CID.session_id, value: e.session_id || '' },
+    { controlId: LOG_CID.org, value: SJ, valueType: 2 },
+  ];
+  if (e.采纳) controls.push({ controlId: LOG_CID['采纳'], value: e.采纳 }, { controlId: LOG_CID['采纳度'], value: String(e.采纳度 ?? 0) }, { controlId: LOG_CID.vetoed, value: e.vetoed ? 'true' : 'false' }, { controlId: LOG_CID['JF记分'], value: String(e.JF ?? 0) }, { controlId: LOG_CID['VR否决度'], value: String(e.VR ?? 0) });
+  const add = await post('https://api.mingdao.com/v2/open/worksheet/addRow', { worksheetId: LOG_WS, triggerWorkflow: false, controls });
+  const id = typeof add.data === 'string' ? add.data : add.data && add.data.rowid;
+  if (!id) throw new Error('先机日志写入失败:' + JSON.stringify(add).slice(0, 120));
+  const g = await post('https://api.mingdao.com/v2/open/worksheet/getRowByIdPost', { worksheetId: LOG_WS, rowId: id });  // 写后必回读（硬编码）
+  if (!g.data || !g.data.rowid) throw new Error('先机日志回读失败');
+  return { msgId: id, verified: true };
+}
+export async function readLog(last = 50) {
+  const K = LOG_CID;
+  const fr = await post('https://api.mingdao.com/v2/open/worksheet/getFilterRows', {
+    worksheetId: LOG_WS, pageSize: last, pageIndex: 1, listType: 0,
+    controls: ['rowid', ...Object.values(K)],
+    sortId: K['预测时间'],
+  });
+  return ((fr.data && fr.data.rows) || []).map(x => ({
+    rowid: x.rowid, at: x[K['预测时间']], mode: x[K.mode], predicted: x[K.predicted_rowid],
+    text: x[K['预测内容']], chain: x[K['链型']], confidence: x[K['置信度']],
+    adoption: x[K['采纳']], degree: x[K['采纳度']], jf: x[K['JF记分']], vr: x[K['VR否决度']],
+  }));
+}
