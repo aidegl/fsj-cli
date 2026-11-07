@@ -10,13 +10,15 @@
 
 const MBTI_PLACEHOLDER = {
   // 占位系数表（偏见风险已知：占位期间误判由人工复核兜底，PR §一挂账）
-  SJ: { dj: 0,  dv: -15, strategy: '攒批涌现', k: 0.9, note: 'Si主：VR低是天性，数据攒到量涌现式给' },
-  NP: { dj: 0,  dv: +15, strategy: '即时标参考', k: 1.0, note: 'Ne主：VR高是天性，即时送但标"供参考"' },
+  SJ: { dj: 0,  dv: -15, strategy: '攒批对照', k: 0.9, note: 'Si主：经验对照（吸收史实对照当下），攒批送达不涌现' },
+  NJ: { dj: 0,  dv: -10, strategy: '涌现式', k: 0.95, note: 'Ni主：存到量出直觉（顿悟涌现）' },
+  NP: { dj: 0,  dv: +15, strategy: '即时标参考', k: 1.0, note: 'Ne主：VR高是天性，即时送但标供参考' },
   NT: { dj: 0,  dv: 0,   strategy: '标准',       k: 1.0, note: 'Ti/Te主：标准基线' },
   NF: { dj: 0,  dv: +5,  strategy: '标准软措辞', k: 0.95, note: 'Fi/Fe主：价值敏感，措辞软' },
 };
 const groupOf = (mbti) => {
   const s = String(mbti || '').toUpperCase();
+  if (/N.*J$/.test(s)) return 'NJ';
   if (/N.*P$/.test(s)) return 'NP';
   if (/^E.?J$|S.*J$/.test(s)) return 'SJ';
   if (/N.*J$/.test(s)) return 'NT';
