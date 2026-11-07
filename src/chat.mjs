@@ -85,8 +85,8 @@ async function findOrCreatePrivate(a, b) {
   const queryOnce = () => post('https://api.mingdao.com/v2/open/worksheet/getFilterRows', {
     worksheetId: ORG, pageSize: 5, pageIndex: 1, listType: 0,
     filters: [
-      { controlId: 'zzyh', dataType: 29, spliceType: 1, filterType: 24, value: a.rowid },
-      { controlId: 'zzyh', dataType: 29, spliceType: 1, filterType: 24, value: b.rowid },
+      { controlId: 'members', dataType: 29, spliceType: 1, filterType: 24, value: a.rowid },
+      { controlId: 'members', dataType: 29, spliceType: 1, filterType: 24, value: b.rowid },
       { controlId: 'ltlx', dataType: 1, spliceType: 1, filterType: 1, value: '私聊' },
     ],
   });
@@ -119,11 +119,11 @@ async function findOrCreatePrivate(a, b) {
   const cr = await post('https://api.mingdao.com/v2/open/worksheet/addRow', {
     worksheetId: ORG, triggerWorkflow: false,
     controls: [
-      { controlId: 'mingcheng', value: a.name + '-' + b.name + '-私聊' },
+      { controlId: 'name', value: a.name + '-' + b.name + '-私聊' },
       { controlId: 'leixing', value: K_LEIXING_CHAT, valueType: 2 },
-      { controlId: 'ltlx', value: K_LTLX_SL, valueType: 2 },
-      { controlId: 'fabuzhe', value: a.rowid, valueType: 2 },
-      { controlId: 'zzyh', value: a.rowid + ',' + b.rowid, valueType: 2 },
+      { controlId: 'chat_type', value: K_LTLX_SL, valueType: 2 },
+      { controlId: 'publisher', value: a.rowid, valueType: 2 },
+      { controlId: 'members', value: a.rowid + ',' + b.rowid, valueType: 2 },
     ],
   });
   const id = typeof cr.data === 'string' ? cr.data : cr.data && cr.data.rowid;
@@ -134,15 +134,21 @@ async function findOrCreatePrivate(a, b) {
 
 // ---------- 群聊（11-06 东城令开放：建群/发群/读群；一切皆群，私聊只是两人的群） ----------
 async function findGroup(name) {
-  const fr = await post('https://api.mingdao.com/v2/open/worksheet/getFilterRows', {
-    worksheetId: ORG, pageSize: 5, pageIndex: 1, listType: 0,
-    controls: ['rowid', 'mingcheng', 'zzyh'],
-    filters: [
-      { controlId: 'mingcheng', dataType: 1, spliceType: 1, filterType: 1, value: name },
-      { controlId: 'ltlx', dataType: 1, spliceType: 1, filterType: 1, value: '群聊' },
-    ],
+  const q = (extra) => post('https://api.mingdao.com/v2/open/worksheet/getFilterRows', {
+    worksheetId: ORG, pageSize: 50, pageIndex: 1, listType: 0,
+    controls: ['rowid', 'name', 'chat_type'],
+    filters: extra,
   });
-  return (fr.data && fr.data.rows) || [];
+  // 防抖两遍（索引抖动）＋兜底全扫群聊按名匹配（别名切换过渡期 name 过滤可能间歇失灵）
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const fr = await q([{ controlId: 'name', dataType: 1, spliceType: 1, filterType: 1, value: name },
+                        { controlId: 'chat_type', dataType: 1, spliceType: 1, filterType: 1, value: '群聊' }]);
+    const rows = (fr.data && fr.data.rows) || [];
+    if (rows.length) return rows;
+    if (attempt === 0) await new Promise(r => setTimeout(r, 400));
+  }
+  const all = await q([{ controlId: 'chat_type', dataType: 1, spliceType: 1, filterType: 1, value: '群聊' }]);
+  return ((all.data && all.data.rows) || []).filter(r => r.name === name);
 }
 export async function createGroup(me, name, memberTargets) {
   const dup = await findGroup(name);
@@ -155,11 +161,11 @@ export async function createGroup(me, name, memberTargets) {
   const cr = await post('https://api.mingdao.com/v2/open/worksheet/addRow', {
     worksheetId: ORG, triggerWorkflow: false,
     controls: [
-      { controlId: 'mingcheng', value: name },
+      { controlId: 'name', value: name },
       { controlId: 'leixing', value: K_LEIXING_CHAT, valueType: 2 },
-      { controlId: 'ltlx', value: K_LTLX_GROUP, valueType: 2 },
-      { controlId: 'fabuzhe', value: me.rowid, valueType: 2 },
-      { controlId: 'zzyh', value: members.map(m => m.rowid).join(','), valueType: 2 },
+      { controlId: 'chat_type', value: K_LTLX_GROUP, valueType: 2 },
+      { controlId: 'publisher', value: me.rowid, valueType: 2 },
+      { controlId: 'members', value: members.map(m => m.rowid).join(','), valueType: 2 },
     ],
   });
   const id = typeof cr.data === 'string' ? cr.data : cr.data && cr.data.rowid;
@@ -208,15 +214,15 @@ export async function readGroup(groupName, last = 20) {
 
 // ---------- 群成员管理（11-06 东城令 gadd/gdel） ----------
 // 两坑（无名 11-06 事故复盘，写代码必守）：
-//  坑1 editRow 对 zzyh 是整字段替换，value=逗号行id串，且【不带 valueType】（带则 10002 解析错）
-//  坑2 getFilterRows/getRowByIdPost 读 zzyh 只回前 50 条+有陈旧缓存——绝不能当写入底稿
+//  坑1 editRow 对 members 是整字段替换，value=逗号行id串，且【不带 valueType】（带则 10002 解析错）
+//  坑2 getFilterRows/getRowByIdPost 读 members 只回前 50 条+有陈旧缓存——绝不能当写入底稿
 //  对策：本地成员底稿缓存（GMEMBERS）为唯一写入底稿；写后按成员 rowid 逐个反向抽验
 const loadGM = () => { try { return JSON.parse(readFileSync(GMEMBERS, 'utf8')); } catch (e) { return {}; } };
 const saveGM = (sid, sids) => { try { const s = loadGM(); s[sid] = sids; writeFileSync(GMEMBERS, JSON.stringify(s, null, 1)); } catch (e) {} };
 
 async function readZzyhSids(sid) {  // ⚠ 只回前≤50+可能陈旧，仅作底稿首建参考，必须提示截断风险
   const g = await post('https://api.mingdao.com/v2/open/worksheet/getRowByIdPost', { worksheetId: ORG, rowId: sid });
-  const z = g.data && g.data.zzyh;
+  const z = g.data && g.data.members;
   const o = typeof z === 'string' ? JSON.parse(z) : z;
   return (Array.isArray(o) ? o : [o]).map(m => m.sid).filter(Boolean);
 }
@@ -224,7 +230,7 @@ async function memberInGroup(memberRowid, sid) {  // 反向抽验：按成员查
   for (let attempt = 0; attempt < 2; attempt++) {  // 索引抖动防抖：失败重查一次
     const fr = await post('https://api.mingdao.com/v2/open/worksheet/getFilterRows', {
       worksheetId: ORG, pageSize: 50, pageIndex: 1, listType: 0, controls: ['rowid'],
-      filters: [{ controlId: 'zzyh', dataType: 29, spliceType: 1, filterType: 24, value: memberRowid }],
+      filters: [{ controlId: 'members', dataType: 29, spliceType: 1, filterType: 24, value: memberRowid }],
     });
     const rows = (fr.data && fr.data.rows) || [];
     if (rows.some(r => r.rowid === sid)) return true;
@@ -240,7 +246,7 @@ export async function groupAdd(me, groupName, targets) {
   const store = loadGM();
   let base = store[sid];
   let approximate = false;
-  if (!base) {  // 底稿首建：只能从 zzyh 读（可能截断），如实标注；读到即落盘（否则空增量时永远建不起来）
+  if (!base) {  // 底稿首建：只能从 members 读（可能截断），如实标注；读到即落盘（否则空增量时永远建不起来）
     base = await readZzyhSids(sid);
     approximate = true;
     saveGM(sid, base);
@@ -256,9 +262,9 @@ export async function groupAdd(me, groupName, targets) {
   // 坑1 姿势：整字段替换、逗号串、不带 valueType
   const u = await post('https://api.mingdao.com/v2/open/worksheet/editRow', {
     worksheetId: ORG, rowId: sid, triggerWorkflow: false,
-    controls: [{ controlId: 'zzyh', value: next.join(',') }],
+    controls: [{ controlId: 'members', value: next.join(',') }],
   });
-  if (!u.data) throw new Error('写 zzyh 失败:' + JSON.stringify(u).slice(0, 120));
+  if (!u.data) throw new Error('写 members 失败:' + JSON.stringify(u).slice(0, 120));
   // 抽验每个新增成员真实在群
   const verified = [];
   for (const p of added) if (await memberInGroup(p.rowid, sid)) verified.push(p.name || p.rowid.slice(0, 8));
@@ -272,7 +278,7 @@ export async function groupRemove(me, groupName, targets) {
   const sid = rows[0].rowid;
   const store = loadGM();
   const base = store[sid];
-  if (!base) throw new Error(`群「${groupName}」没有本地成员底稿——为防 zzyh 截断误删，请先 gadd 一次建立底稿，或手动维护`);
+  if (!base) throw new Error(`群「${groupName}」没有本地成员底稿——为防 members 截断误删，请先 gadd 一次建立底稿，或手动维护`);
   const removed = [];
   for (const t of targets) {
     const p = await resolve(t);
@@ -281,9 +287,9 @@ export async function groupRemove(me, groupName, targets) {
   if (!removed.length) throw new Error('没有移除任何成员（目标不在底稿中）');
   const u = await post('https://api.mingdao.com/v2/open/worksheet/editRow', {
     worksheetId: ORG, rowId: sid, triggerWorkflow: false,
-    controls: [{ controlId: 'zzyh', value: base.join(',') }],
+    controls: [{ controlId: 'members', value: base.join(',') }],
   });
-  if (!u.data) throw new Error('写 zzyh 失败:' + JSON.stringify(u).slice(0, 120));
+  if (!u.data) throw new Error('写 members 失败:' + JSON.stringify(u).slice(0, 120));
   const verified = [];
   for (const p of removed) if (!(await memberInGroup(p.rowid, sid))) verified.push(p.name || p.rowid.slice(0, 8));
   saveGM(sid, base);
@@ -313,11 +319,11 @@ export async function send(me, target, text) {
 export async function listMine(me) {
   const fr = await post('https://api.mingdao.com/v2/open/worksheet/getFilterRows', {
     worksheetId: ORG, pageSize: 50, pageIndex: 1, listType: 0,
-    controls: ['rowid', 'mingcheng', 'ltlx', 'zzyh'],
-    filters: [{ controlId: 'zzyh', dataType: 29, spliceType: 1, filterType: 24, value: me.rowid }],
+    controls: ['rowid', 'name', 'chat_type', 'members'],
+    filters: [{ controlId: 'members', dataType: 29, spliceType: 1, filterType: 24, value: me.rowid }],
   });
   return ((fr.data && fr.data.rows) || []).map(x => ({
-    rowid: x.rowid, name: x.mingcheng, type: typeof x.ltlx === 'string' ? x.ltlx : (x.ltlx && (x.ltlx.value || (x.ltlx[0] && x.ltlx[0].name))) || '未分类',
+    rowid: x.rowid, name: x.name, type: typeof x.ltlx === 'string' ? x.ltlx : (x.ltlx && (x.ltlx.value || (x.ltlx[0] && x.ltlx[0].name))) || '未分类',
   }));
 }
 
