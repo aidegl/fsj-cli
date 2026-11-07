@@ -87,7 +87,14 @@ async function findOrCreatePrivate(a, b) {
       const z = g.data && g.data.members;
       const o = typeof z === 'string' ? JSON.parse(z) : z;
       const sids = (Array.isArray(o) ? o : [o]).map(m => m.sid).filter(Boolean);
-      if (sids.includes(a.rowid) && sids.includes(b.rowid)) return cached;
+      if (sids.includes(a.rowid) && sids.includes(b.rowid)) {
+        // 空房不作正身（罗景澄复测抓的洞：members 相同分不出正身/重复房，正身裁定=消息最多）
+        const cnt = await post('https://api.mingdao.com/v2/open/worksheet/getFilterRows', {
+          worksheetId: DATA, pageSize: 1, pageIndex: 1, listType: 0,
+          filters: [{ controlId: 'visible_org', dataType: 29, spliceType: 1, filterType: 24, value: cached }],
+        });
+        if ((cnt.data && cnt.data.total) > 0) return cached;
+      }
     } catch (e) {}  // 房已删/查询抖动 → 作废走重解析
   }
 
