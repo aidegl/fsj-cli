@@ -80,7 +80,16 @@ async function findOrCreatePrivate(a, b) {
   // 正身缓存优先（确定性优先：本地命中即毫秒+确定，绕开 HAP 索引抖动）
   const key = [a.rowid, b.rowid].sort().join('|');
   const cached = loadSessions()[key];
-  if (cached) return cached;
+  if (cached) {
+    // 缓存命中先验房（11-07 罗景澄回归：坏缓存不自愈会写进作废房）：读房间 members 集合，含双方才信
+    try {
+      const g = await post('https://api.mingdao.com/v2/open/worksheet/getRowByIdPost', { worksheetId: ORG, rowId: cached });
+      const z = g.data && g.data.members;
+      const o = typeof z === 'string' ? JSON.parse(z) : z;
+      const sids = (Array.isArray(o) ? o : [o]).map(m => m.sid).filter(Boolean);
+      if (sids.includes(a.rowid) && sids.includes(b.rowid)) return cached;
+    } catch (e) {}  // 房已删/查询抖动 → 作废走重解析
+  }
 
   const queryOnce = () => post('https://api.mingdao.com/v2/open/worksheet/getFilterRows', {
     worksheetId: ORG, pageSize: 5, pageIndex: 1, listType: 0,
@@ -129,7 +138,7 @@ async function findOrCreatePrivate(a, b) {
     let sids = [];
     try { const o = typeof row.members === 'string' ? JSON.parse(row.members) : row.members;
       sids = (Array.isArray(o) ? o : [o]).map(m => m.sid).filter(Boolean); } catch (e) {}
-    if ([...new Set(sids)].sort().join(',') === mkey) return row.rowid;
+    if ([...new Set(sids)].sort().join(',') === mkey) { saveSession(key, row.rowid); return row.rowid; }
   }
   const cr = await post('https://api.mingdao.com/v2/open/worksheet/addRow', {
     worksheetId: ORG, triggerWorkflow: false,
