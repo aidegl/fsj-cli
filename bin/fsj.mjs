@@ -31,7 +31,7 @@ try {
     json ? outJson(hits) : console.log(`【find "${arg}"】${hits.length} 命中\n` + hits.map(r => `- [w${r.weight}] ${r.title}（${DIM[r.dimension] || r.dimension}维 · ${r.rowid}）`).join('\n'));
   } else if (cmd === 'chat') {
     // chat 动词族（11-06 东城令）：send/list/read/who —— 一切皆群，私聊=两人的群，寻址 rowid/全名（编号已弃用防漂移）
-    const { identity, send, listMine, read, contacts, createGroup, sendGroup, readGroup, groupAdd, groupRemove } = await import('../src/chat.mjs');
+    const { identity, send, listMine, read, contacts, createGroup, sendGroup, readGroup, groupAdd, groupRemove, dismissGroup } = await import('../src/chat.mjs');
     const [verb, target, ...msgParts] = rest;
     if (verb === 'send') {
       const me = identity();
@@ -74,6 +74,11 @@ try {
       stamp(performance.now() - t0);
       const act = verb === 'gadd' ? '入群' : '移出';
       json ? outJson(r) : console.log(`【chat ${verb}】群「${target}」\n${act}: ${r[verb === 'gadd' ? 'added' : 'removed'].join('、')}\n抽验${verb === 'gadd' ? '在群' : '已移出'}: ${r.verified.join('、') || '（未验到，重跑抽验）'}` + (r.approximate ? '\n⚠ 底稿为首建（HAP zzyh 只回前50，可能不全）——大群请谨慎，必要时手动核对' : ''));
+    } else if (verb === 'gdismiss') {
+      if (!target) { console.error('用法：fsj chat gdismiss <群名>'); process.exit(2); }
+      const r = await dismissGroup(target);
+      stamp(performance.now() - t0);
+      json ? outJson(r) : console.log(`【chat gdismiss】群「${r.name}」已解散（${r.dismissed.slice(0, 8)}…）`);
     } else if (verb === 'who') {
       const list = await contacts(rest[0] === '--fresh');
       stamp(performance.now() - t0);

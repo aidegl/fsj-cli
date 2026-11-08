@@ -434,3 +434,12 @@ export async function readLog(last = 50) {
     adoption: x[K['采纳']], degree: x[K['采纳度']], jf: x[K['JF记分']], vr: x[K['VR否决度']],
   }));
 }
+
+// 解散群（删 ORG 会话行；与 gdel 移人区分）——11-08 全员大会作废群清理实战衍生
+export async function dismissGroup(groupName) {
+  const rows = await findGroup(groupName);
+  if (!rows.length) throw new Error(`群「${groupName}」不存在或已解散`);
+  const d = await post('https://api.mingdao.com/v2/open/worksheet/deleteRow', { worksheetId: ORG, rowId: rows[0].rowid });
+  if (!d.data) throw new Error('解散失败:' + JSON.stringify(d).slice(0, 100));
+  return { dismissed: rows[0].rowid, name: groupName };
+}
