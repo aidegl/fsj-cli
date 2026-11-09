@@ -160,13 +160,13 @@ async function auditAll(force) {
     const nodes = [];
     (function walk(n, depth) {
       if (!n || typeof n !== 'object') return;
-      nodes.push({ title: n.title || n.name || '(无题)', dim: n.dimension, depth, body: String(n.body || '') });
+      nodes.push({ title: n.title || n.name || '(无题)', dim: n.dimension, depth, body: String(n.docRef || n.body || '') });   // docRef 为正身字段；body 兼容旧树
       (n.children || []).forEach(c => walk(c, depth + 1));
     })(tree, 0);
     const dims = {}; let bound = 0, empty = 0, pathBody = 0; const refs = new Set();
     for (const n of nodes) {
       const d = String(n.dim); dims[d] = (dims[d] || 0) + 1;
-      const ms = [...n.body.matchAll(/fsj:\/\/([0-9a-zA-Z]+)/g)].map(m => m[1]);
+      const ms = [...n.body.matchAll(/fsj:\/\/([0-9a-zA-Z-]+)/g)].map(m => m[1]);
       if (ms.length) { bound++; ms.forEach(r => { refs.add(r); usedRefs.add(r); }); }
       else if (!n.body.trim()) empty++;
       else pathBody++;
