@@ -189,10 +189,23 @@ async function auditAll(force) {
   }
   const dupGroups = Object.values(byHash).filter(v => v.length > 1);
   const orphans = Object.keys(docIndex).filter(id => !usedRefs.has(id));
+  // 盲区检测：文档根之外的一级目录 = 搬家过去就扫不到、id 会悬空的地方（只列目录名，浅层计数）
+  const blindSpots = [];
+  try {
+    const base = 'D:/Item';
+    for (const e of readdirSync(base, { withFileTypes: true })) {
+      if (!e.isDirectory()) continue;
+      const full = resolve(base, e.name);
+      if (DOC_ROOTS.some(r => full === r || full.startsWith(r + sep))) continue;
+      let md = 0;
+      try { for (const f of readdirSync(full)) if (/\.md$/i.test(f)) md++; } catch (err) {}
+      blindSpots.push({ dir: full, mdTop: md });
+    }
+  } catch (e) {}
   const data = {
     at: new Date().toISOString(), docRoots: DOC_ROOTS, mdTotal, mdCount, idCount: Object.keys(docIndex).length,
     trees, brokenTotal: trees.reduce((s, t) => s + (t.broken ? t.broken.length : 0), 0),
-    orphanTotal: orphans.length, orphans: orphans.slice(0, 200), dupGroups,
+    orphanTotal: orphans.length, orphans: orphans.slice(0, 200), dupGroups, blindSpots,
   };
   _auditCache = { at: Date.now(), data };
   return data;
