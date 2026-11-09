@@ -12,6 +12,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.argv[2]) || 8330;
 const TREES = resolve(process.argv[3] || join(HERE, 'tests', 'fixtures'));
 const ROOTS = (process.argv[4] ? process.argv[4].split(',') : [HERE]).map(p => resolve(p.trim()));
+const DOC_ROOTS = (process.argv[5] ? process.argv[5].split(',') : ROOTS).map(p => resolve(p.trim()));   // 体检用的文档扫描根（fsj-id 索引来源）
 const PAGE = join(HERE, 'world-editor.html');
 
 // ===== 沙箱开关（10-28 东城令）：默认关=只许三根内；开=可访问授权根之外（越界访问全留痕） =====
@@ -88,7 +89,10 @@ const PROPOSAL_LOG = 'D:/Item/fsj/tmp-api/proposal-results.jsonl';
 
 
 
-const persistIdx = () => { try { writeFileSync(IDX, JSON.stringify(idIndex, null, 2), 'utf8'); } catch (e) {} };
+const persistIdx = () => { try {                                                     // 合并写（11-02 无名修）：先并回磁盘上别人补的条目再写——禁全量覆盖抹掉外部编辑
+  let disk = {}; try { disk = JSON.parse(readFileSync(IDX, 'utf8')); } catch (e) {}
+  for (const k of Object.keys(disk)) if (!idIndex[k]) idIndex[k] = disk[k];
+  writeFileSync(IDX, JSON.stringify(idIndex, null, 2), 'utf8'); } catch (e) {} };
 const SKIP_DIRS = new Set(['.git', 'node_modules', '.obsidian']);
 async function scanIds(needId) {                                         // 全盘扫各根的 .md/.txt 文件头，找 fsj-id
   async function walk(dir, depth) {
@@ -96,7 +100,7 @@ async function scanIds(needId) {                                         // 全�
     let ents = [];
     try { ents = await fsp.readdir(dir, { withFileTypes: true }); } catch (e) { return; }
     for (const e of ents) {
-      if (e.name.startsWith('.') || SKIP_DIRS.has(e.name)) continue;
+      if (e.name.startsWith('.') && e.name !== '.claude' || SKIP_DIRS.has(e.name)) continue;   /* .claude 放行（11-02 无名修）：全局技能文件住 ~/.claude/skills，点目录一律跳过会让技能永远扫不到 */
       const full = join(dir, e.name);
       if (e.isDirectory()) await walk(full, depth + 1);
       else if (/\.(md|txt)$/i.test(e.name)) {
@@ -105,7 +109,7 @@ async function scanIds(needId) {                                         // 全�
           const buf = Buffer.alloc(2048);
           const { bytesRead } = await fh.read(buf, 0, 2048, 0);
           await fh.close();
-          const m = /^fsj-id:\s*(\S+)\s*$/m.exec(buf.slice(0, bytesRead).toString('utf8'));
+          const m = /^(?:fsj_id|fsj-id):\s*(\S+)\s*$/m.exec(buf.slice(0, bytesRead).toString('utf8'));   // fsj_id 正身（11-03 东城定 snake_case），fsj-id 旧键过渡兼容
           if (m) { idIndex[m[1]] = { path: full }; if (m[1] === needId) return true; }
         } catch (e) {}
       }
@@ -116,8 +120,85 @@ async function scanIds(needId) {                                         // 全�
   persistIdx();
 }
 
-const send = (res, code, body, type = 'application/json; charset=utf-8') => {
-  res.writeHead(code, { 'Content-Type': type, 'Cache-Control': 'no-store', 'Access-Control-Allow-Origin': '*' });
+// ===== 世界树体检（11-09 小风加）：只读体检——维度分布/挂文档率/断链/孤文/双份 =====
+// 注：维度中文名不在服务端硬编码（维度词属内核词汇，页面侧映射；本仓隐身铁律=零核心痕迹）
+const AUDIT_SKIP = new Set(['node_modules', '.git', '__pycache__', 'memory-lab', '.venv', 'temp', 'logs']);
+let _auditCache = { at: 0, data: null };
+async function auditAll(force) {
+  if (!force && _auditCache.data && Date.now() - _auditCache.at < 60000) return _auditCache.data;
+  const reg = loadRegistry();
+  const targets = [];
+  for (const f of readdirSync(TREES)) if (f.endsWith('.json') && !EXCLUDE.has(f)) targets.push({ name: f.replace(/\.json$/, ''), path: join(TREES, f) });
+  for (const [name, p] of Object.entries(reg)) if (!targets.some(t => t.name === name)) targets.push({ name, path: p });
+  // 文档索引：扫 DOC_ROOTS，读 frontmatter 的 fsj_id
+  const docIndex = {}; const mdCount = {}; let mdTotal = 0;
+  for (const root of DOC_ROOTS) {
+    let n = 0;
+    const walk = async (dir) => {
+      let ents; try { ents = await fsp.readdir(dir, { withFileTypes: true }); } catch (e) { return; }
+      for (const e of ents) {
+        if (AUDIT_SKIP.has(e.name)) continue;
+        const full = join(dir, e.name);
+        if (e.isDirectory()) { await walk(full); continue; }
+        if (!/\.md$/i.test(e.name)) continue;
+        n++; mdTotal++;
+        try {
+          const fh = await fsp.open(full, 'r'); const buf = Buffer.alloc(2048);
+          const { bytesRead } = await fh.read(buf, 0, 2048, 0); await fh.close();
+          const m = /^(?:fsj_id|fsj-id):\s*(\S+)\s*$/m.exec(buf.slice(0, bytesRead).toString('utf8'));
+          if (m) docIndex[m[1]] = full;
+        } catch (e) {}
+      }
+    };
+    await walk(root); mdCount[root] = n;
+  }
+  // 逐树体检
+  const usedRefs = new Set(); const trees = [];
+  for (const t of targets) {
+    let tree = null; try { tree = JSON.parse(readFileSync(t.path, 'utf8')); } catch (e) {}
+    if (!tree) { trees.push({ name: t.name, path: t.path, error: '读不出/非 JSON' }); continue; }
+    const nodes = [];
+    (function walk(n, depth) {
+      if (!n || typeof n !== 'object') return;
+      nodes.push({ title: n.title || n.name || '(无题)', dim: n.dimension, depth, body: String(n.body || '') });
+      (n.children || []).forEach(c => walk(c, depth + 1));
+    })(tree, 0);
+    const dims = {}; let bound = 0, empty = 0, pathBody = 0; const refs = new Set();
+    for (const n of nodes) {
+      const d = String(n.dim); dims[d] = (dims[d] || 0) + 1;
+      const ms = [...n.body.matchAll(/fsj:\/\/([0-9a-zA-Z]+)/g)].map(m => m[1]);
+      if (ms.length) { bound++; ms.forEach(r => { refs.add(r); usedRefs.add(r); }); }
+      else if (!n.body.trim()) empty++;
+      else pathBody++;
+    }
+    const broken = [...refs].filter(r => !docIndex[r]);
+    const src = /fsj4/i.test(t.path) ? 'fsj4' : (/fsj3/i.test(t.path) ? 'fsj3' : '其它');
+    trees.push({
+      name: t.name, title: tree.title || t.name, path: t.path, src,
+      nodes: nodes.length, maxDepth: nodes.reduce((m, n) => Math.max(m, n.depth), 0),
+      dims, bound, empty, pathBody, refs: refs.size, broken,
+      bindRate: nodes.length ? +(bound / nodes.length * 100).toFixed(1) : 0,
+    });
+  }
+  // 双份检测：同内容（sha1）不同路径 = 同一棵树的两份拷贝
+  const byHash = {};
+  for (const t of targets) {
+    let h = null; try { h = (await import('crypto')).createHash('sha1').update(readFileSync(t.path)).digest('hex'); } catch (e) {}
+    if (!h) continue;
+    (byHash[h] = byHash[h] || []).push(t.path);
+  }
+  const dupGroups = Object.values(byHash).filter(v => v.length > 1);
+  const orphans = Object.keys(docIndex).filter(id => !usedRefs.has(id));
+  const data = {
+    at: new Date().toISOString(), docRoots: DOC_ROOTS, mdTotal, mdCount, idCount: Object.keys(docIndex).length,
+    trees, brokenTotal: trees.reduce((s, t) => s + (t.broken ? t.broken.length : 0), 0),
+    orphanTotal: orphans.length, orphans: orphans.slice(0, 200), dupGroups,
+  };
+  _auditCache = { at: Date.now(), data };
+  return data;
+}
+
+const send = (res, code, body, type = 'application/json; charset=utf-8') => {  res.writeHead(code, { 'Content-Type': type, 'Cache-Control': 'no-store', 'Access-Control-Allow-Origin': '*' });
   res.end(body);
 };
 const treePath = (name) => {
@@ -161,6 +242,11 @@ createServer(async (req, res) => {
       }).filter(Boolean);
       return send(res, 200, JSON.stringify([...dirTrees, ...regTrees]));
     }
+    if (u.pathname === '/api/audit' && req.method === 'GET') {
+      // 世界树体检（11-09 小风加）：维度分布 / 挂文档率 / 断链 / 孤文 / 双份检测 —— 只读，不改任何数据
+      const a = await auditAll();
+      return send(res, 200, JSON.stringify(a));
+    }
     if (u.pathname === '/api/tree') {
       const reg = loadRegistry();
       const qname = u.searchParams.get('name') || 'world_tree';
@@ -203,7 +289,7 @@ createServer(async (req, res) => {
         const fid = Array.from({ length: 12 }, () => CH[Math.floor(Math.random() * CH.length)]).join('');
         const today = new Date().toISOString().slice(0, 10);
         const t = String(j.title || '无题').replace(/[\r\n]+/g, ' ').replace(/"/g, "'");
-        const md = '---\nfsj-id: ' + fid + '\ntitle: "' + t + '"\nctime: ' + today + '\nutime: ' + today + '\n---\n\n' + content.replace(/\r\n/g, '\n');
+        const md = '---\nfsj_id: ' + fid + '\ntitle: "' + t + '"\nctime: ' + today + '\nutime: ' + today + '\n---\n\n' + content.replace(/\r\n/g, '\n');
         try {
           mkdirSync(rdir, { recursive: true });
           const full = join(rdir, fid + '.md');
@@ -317,7 +403,7 @@ createServer(async (req, res) => {
           return send(res, 403, '{"error":"只有 .md/.txt 允许 frontmatter——.base/.json 等结构文件保持路径指针"}');
         }
         writeFileSync(f, b, 'utf8');
-        const m = /^---\r?\n[\s\S]*?^fsj-id:\s*(\S+)\s*$/m.exec(b.slice(0, 400));   // 写入时顺手登记 id 索引
+        const m = /^---\r?\n[\s\S]*?^(?:fsj_id|fsj-id):\s*(\S+)\s*$/m.exec(b.slice(0, 400));   // 写入时顺手登记 id 索引（双键兼容，11-03 起 writes 走 fsj_id）
         for (const k of Object.keys(idIndex)) if (idIndex[k].path === f && k !== (m && m[1])) delete idIndex[k];   // 改 id 场景：同路径旧 id 清理
         if (m) { idIndex[m[1]] = { path: f }; }
         persistIdx();
