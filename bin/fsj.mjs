@@ -95,11 +95,17 @@ try {
       ].join('\n'));
       process.exit(2);
     }
+  } else if (cmd === 'tgp') {
+    // TGP 投影（11-09 东城定调）：世界树格式是内部正身，TGP 是 CLI 输出给别人看的东西——只读视图，永不落档
+    const { tgpView } = await import('../src/tgp.mjs');
+    const r = tgpView(arg || 'trees/xiaofeng.json');
+    stamp(performance.now() - t0);
+    json ? outJson(r) : console.log(r.markdown);
   } else if (cmd === 'decode' || cmd === 'log' || cmd === 'flow') {
     console.error(`fsj ${cmd}：M2 实现（PR 第 9 节里程碑），先跑 boot/get/find`);
     process.exit(2);
   } else {
-    console.log('fsj — FSJ 世界接入器 v0.1\n用法：fsj boot | get <rowid> | getr <rowid> | find <词> | chat send/list/read/who [--json]\nM2 桩：decode / log / flow');
+    console.log('fsj — FSJ 世界接入器 v0.1\n用法：fsj boot | get <rowid> | getr <rowid> | find <词> | tgp <树json路径> | chat send/list/read/who [--json]\nM2 桩：decode / log / flow');
   }
 } catch (e) {
   process.stderr.write('✘ ' + e.message + '\n');
