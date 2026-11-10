@@ -5,9 +5,7 @@
 //   fsj cloud pull <名字> [-o <路径>]    # 拉某成员云端树（-o 落文件，缺省打印）
 //   fsj cloud push --name <名字> --file <树.json>   # 推本地树到云端该成员行（写权限开通后可用）
 //   fsj cloud show <名字>               # 只看云端树头（根 title + 一级分区）
-const _argv = process.argv; process.argv = [_argv[0], _argv[1]];   // 清 argv 防 hap-mcp 尾部 CLI 误触发
-const { callTool } = await import('file:///D:/Item/fsj4/agents/108/026%C2%B7limuchen/workspace/tmp/hap-mcp.mjs');
-process.argv = _argv;
+import { callTool } from './mcp/hap-mcp.mjs';   // 适配层（正身仍归慕尘，此处只引用不复制）
 
 export const HAP_APP = '203def35-81c1-4930-9ea4-9ded2d92e489';     // 108将世界1.0（user 表所在）
 export const USER_WS = '69b0077358322d512e60bad0';                  // user 表（world_tree 字段在此）

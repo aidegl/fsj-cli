@@ -1,0 +1,24 @@
+{
+  "_note": "fsj CLI 命令清单正身——8332 看板「CLI 说明」页读此文件渲染，禁在看板里另抄一份（防命令漂移）",
+  "updated": "2026-11-10",
+  "commands": [
+    { "cmd": "fsj boot",        "desc": "开机场景卡（情绪/对方/地点），快思考入口" },
+    { "cmd": "fsj get <rowid>", "desc": "按 rowid 取记录正文（mock 索引）" },
+    { "cmd": "fsj getr <rowid>", "desc": "按 rowid 取真云正文" },
+    { "cmd": "fsj find <词>",   "desc": "索引检索（质量分排序）" },
+    { "cmd": "fsj chat ...",    "desc": "聊天动词族：send/list/read/who（一切皆群）" },
+    { "cmd": "fsj data tables", "desc": "ERP 表注册表（别名→正身 id）" },
+    { "cmd": "fsj data members [--dept 部]", "desc": "108 成员名单摘要（一行一人）" },
+    { "cmd": "fsj data member <姓名|编号>",  "desc": "成员档案单行（工作属性全集）" },
+    { "cmd": "fsj data get <rowid> [--ws 别名]", "desc": "ERP 任意表行直取" },
+    { "cmd": "fsj cloud ls",    "desc": "云端 world_tree 非空成员清单" },
+    { "cmd": "fsj cloud pull <名字> [-o 路径]", "desc": "拉某成员云端世界树（-o 落盘）" },
+    { "cmd": "fsj cloud push --name <名字> --file <树.json>", "desc": "推本地树到云端（写权限待东城批）" },
+    { "cmd": "fsj cloud show <名字>", "desc": "只看云端树骨架" }
+  ],
+  "ports": [
+    { "port": 8330, "what": "世界树编辑器（读/写树/提案/体检/云端下拉）", "url": "http://localhost:8330" },
+    { "port": 8331, "what": "fsj web 开发者控制台", "url": "http://localhost:8331" },
+    { "port": 8332, "what": "后台数据化看板（王芷渺主理）", "url": "http://127.0.0.1:8332" }
+  ]
+}

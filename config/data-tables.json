@@ -1,0 +1,19 @@
+{
+  "appId": "15180c64-690c-4a07-a17b-676a1de09977",
+  "tables": {
+    "members":  { "id": "6af0502e1f1e6e6e24c0d955", "name": "成员档案" },
+    "tasks":    { "id": "6af0502e1f1e6e6e24c0d954", "name": "任务账本" },
+    "projects": { "id": "6af0502e1f1e6e6e24c0d953", "name": "项目管理" },
+    "rules":    { "id": "6af2701ca111c823d0e47450", "name": "规则正身" },
+    "xjrz":     { "id": "6af0502e1f1e6e6e24c0d956", "name": "先机日志" },
+    "gwcsb":    { "id": "6af0502e1f1e6e6e24c0d957", "name": "格物测试-勿删" }
+  },
+  "members": {
+    "fields": {
+      "no": "6af05c50cf627ccbbb46b29d", "user": "6af056ec4a7a0be13106a6d7", "star": "6aef1e197d694dc94a5761da",
+      "dept": "6aef1e197d694dc94a5761db", "post": "6aef1e197d694dc94a5761dc", "intro": "6aef1e197d694dc94a5761dd",
+      "perm": "6aef1e197d694dc94a5761de", "duty": "6aef1e197d694dc94a5761df", "now": "6aef1e197d694dc94a5761e0",
+      "mbti": "6aef1e197d694dc94a5761e1", "note": "6aef1e197d694dc94a5761e2"
+    }
+  }
+}

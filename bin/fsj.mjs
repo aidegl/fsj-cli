@@ -29,6 +29,11 @@ try {
     const hits = find(arg);
     stamp(performance.now() - t0);
     json ? outJson(hits) : console.log(`【find "${arg}"】${hits.length} 命中\n` + hits.map(r => `- [w${r.weight}] ${r.title}（${DIM[r.dimension] || r.dimension}维 · ${r.rowid}）`).join('\n'));
+  } else if (cmd === 'data') {
+    // HAP/ERP 数据读出口（11-10 东城令与 cloud 合流进同一个 fsj 入口；原 fsj-data.mjs 已迁入 src/commands/data.mjs）
+    const d = await import('../src/commands/data.mjs');
+    await d.run(rest);
+    stamp(performance.now() - t0);
   } else if (cmd === 'cloud') {
     // 云端世界树（11-10 东城令：上云做成函数，agent 一条命令，省 token）——ls/pull/push/show
     const c = await import('../src/cloud.mjs');
