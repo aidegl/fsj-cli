@@ -216,6 +216,7 @@ const HAP_MCP = 'file:///D:/Item/fsj4/agents/108/026%C2%B7limuchen/workspace/tmp
 const HAP_APP = '203def35-81c1-4930-9ea4-9ded2d92e489';    // 108将世界 app（user 表所在）
 const HAP_USER_WS = '69b0077358322d512e60bad0';            // user 表（world_tree 字段在此）
 let _hap = null;
+let _hapScan = { done: false, at: 0, users: [] };
 async function hapTool(){ if(!_hap){ const _a=process.argv; process.argv=[_a[0],_a[1]]; const m=await import(HAP_MCP); process.argv=_a; _hap=m.callTool; } return _hap; }
 
 const send = (res, code, body, type = 'application/json; charset=utf-8') => {  res.writeHead(code, { 'Content-Type': type, 'Cache-Control': 'no-store', 'Access-Control-Allow-Origin': '*' });
@@ -262,13 +263,35 @@ createServer(async (req, res) => {
       }).filter(Boolean);
       return send(res, 200, JSON.stringify([...dirTrees, ...regTrees]));
     }
-    if (u.pathname === '/api/hap-users' && req.method === 'GET') {   // 云端成员清单：world_tree 非空者
+    if (u.pathname === '/api/hap-users' && req.method === 'GET') {   // 云端成员清单：world_tree 非空者（服务端 filterNull 过滤——列表接口对长文本字段回空值，客户端过滤不可行，11-10 实测）
       try {
-        const tool = await hapTool();
-        const r = await tool('get_record_list', { appId: HAP_APP, worksheet_id: HAP_USER_WS, pageIndex: 1, pageSize: 500 });
-        const rows = (r?.data?.rows) || [];
-        const users = rows.filter(x => x.world_tree && String(x.world_tree).trim()).map(x => ({ rowid: x.rowid || x.rowId, name: x.cn_name || x.nickname || x.en_name || String(x.rowid||'').slice(0,8) }));
-        return send(res, 200, JSON.stringify({ total: rows.length, users }));
+        // 列表接口对长文本字段（world_tree）回空——必须逐行 get_record_details 探测；并发 8、结果缓存 10 分钟
+        if (!_hapScan.done || Date.now() - _hapScan.at > 600000) {
+          _hapScan = { done: false, at: 0, users: [] };
+          const tool = await hapTool();
+          const rows = []; let page = 1;
+          for (; page <= 5; page++) {
+            const r = await tool('get_record_list', { appId: HAP_APP, worksheet_id: HAP_USER_WS, pageIndex: page, pageSize: 100 });
+            const rr = (r?.data?.rows) || [];
+            if (!rr.length) break;
+            rows.push(...rr);
+            if (rr.length < 100) break;
+          }
+          const batch = 8;
+          for (let i = 0; i < rows.length; i += batch) {
+            const results = await Promise.all(rows.slice(i, i + batch).map(async x => {
+              try {
+                const d = await tool('get_record_details', { appId: HAP_APP, worksheet_id: HAP_USER_WS, row_id: x.rowid || x.rowId });
+                const rec = d?.data || d || {};
+                const wt = rec.world_tree;
+                return (wt && String(wt).trim().length > 2) ? { rowid: x.rowid || x.rowId, name: x.cn_name || x.nickname || x.en_name || String(x.rowid||'').slice(0,8), size: String(wt).length } : null;
+              } catch (e) { return null; }
+            }));
+            for (const r2 of results) if (r2) _hapScan.users.push(r2);
+          }
+          _hapScan.done = true; _hapScan.at = Date.now();
+        }
+        return send(res, 200, JSON.stringify({ scanning: !_hapScan.done, total: _hapScan.users.length, users: _hapScan.users }));
       } catch (e) { return send(res, 502, JSON.stringify({ error: 'HAP 读失败：' + String(e.message || e).slice(0, 120) })); }
     }
     if (u.pathname === '/api/hap-tree' && req.method === 'GET') {    // 读某成员云端树
