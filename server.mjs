@@ -212,12 +212,11 @@ async function auditAll(force) {
 }
 
 // ===== HAP user 表云端世界树（11-10 东城令）：本地树保留，云端正身起步——读清单/读树/存树走 MCP 正身 =====
-const HAP_MCP = 'file:///D:/Item/fsj4/agents/108/026%C2%B7limuchen/workspace/tmp/hap-mcp.mjs';  // 慕尘 MCP 正身（argv 清空后 import，防误触发其 CLI）
 const HAP_APP = '203def35-81c1-4930-9ea4-9ded2d92e489';    // 108将世界 app（user 表所在）
 const HAP_USER_WS = '69b0077358322d512e60bad0';            // user 表（world_tree 字段在此）
 let _hap = null;
 let _hapScan = { done: false, at: 0, users: [] };
-async function hapTool(){ if(!_hap){ const _a=process.argv; process.argv=[_a[0],_a[1]]; const m=await import(HAP_MCP); process.argv=_a; _hap=m.callTool; } return _hap; }
+async function hapTool(){ if(!_hap){ const m = await import('./src/mcp/hap-mcp.mjs'); _hap = m.callTool; } return _hap; }   // 适配层：正身归慕尘，此处只引用
 
 const send = (res, code, body, type = 'application/json; charset=utf-8') => {  res.writeHead(code, { 'Content-Type': type, 'Cache-Control': 'no-store', 'Access-Control-Allow-Origin': '*' });
   res.end(body);
