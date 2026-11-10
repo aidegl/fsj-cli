@@ -211,6 +211,13 @@ async function auditAll(force) {
   return data;
 }
 
+// ===== HAP user 表云端世界树（11-10 东城令）：本地树保留，云端正身起步——读清单/读树/存树走 MCP 正身 =====
+const HAP_MCP = 'file:///D:/Item/fsj4/agents/108/026%C2%B7limuchen/workspace/tmp/hap-mcp.mjs';  // 慕尘 MCP 正身（argv 清空后 import，防误触发其 CLI）
+const HAP_APP = '203def35-81c1-4930-9ea4-9ded2d92e489';    // 108将世界 app（user 表所在）
+const HAP_USER_WS = '69b0077358322d512e60bad0';            // user 表（world_tree 字段在此）
+let _hap = null;
+async function hapTool(){ if(!_hap){ const _a=process.argv; process.argv=[_a[0],_a[1]]; const m=await import(HAP_MCP); process.argv=_a; _hap=m.callTool; } return _hap; }
+
 const send = (res, code, body, type = 'application/json; charset=utf-8') => {  res.writeHead(code, { 'Content-Type': type, 'Cache-Control': 'no-store', 'Access-Control-Allow-Origin': '*' });
   res.end(body);
 };
@@ -254,6 +261,42 @@ createServer(async (req, res) => {
         try { return { name, title: JSON.parse(readFileSync(p, 'utf8')).title || name }; } catch (e) { return { name, title: name }; }
       }).filter(Boolean);
       return send(res, 200, JSON.stringify([...dirTrees, ...regTrees]));
+    }
+    if (u.pathname === '/api/hap-users' && req.method === 'GET') {   // 云端成员清单：world_tree 非空者
+      try {
+        const tool = await hapTool();
+        const r = await tool('get_record_list', { appId: HAP_APP, worksheet_id: HAP_USER_WS, pageIndex: 1, pageSize: 500 });
+        const rows = (r?.data?.rows) || [];
+        const users = rows.filter(x => x.world_tree && String(x.world_tree).trim()).map(x => ({ rowid: x.rowid || x.rowId, name: x.cn_name || x.nickname || x.en_name || String(x.rowid||'').slice(0,8) }));
+        return send(res, 200, JSON.stringify({ total: rows.length, users }));
+      } catch (e) { return send(res, 502, JSON.stringify({ error: 'HAP 读失败：' + String(e.message || e).slice(0, 120) })); }
+    }
+    if (u.pathname === '/api/hap-tree' && req.method === 'GET') {    // 读某成员云端树
+      const rowid = u.searchParams.get('rowid') || '';
+      if (!/^[0-9a-f-]{8,}$/i.test(rowid)) return send(res, 400, '{"error":"bad rowid"}');
+      try {
+        const tool = await hapTool();
+        const r = await tool('get_record_details', { appId: HAP_APP, worksheet_id: HAP_USER_WS, row_id: rowid });
+        const rec = r?.data || r || {};
+        const wt = rec.world_tree !== undefined ? rec.world_tree : (rec.fields || {}).world_tree;
+        const str = typeof wt === 'string' ? wt : JSON.stringify(wt ?? '');
+        return send(res, 200, JSON.stringify(JSON.parse(str)));      // 坏 JSON 如实 500
+      } catch (e) { return send(res, 502, JSON.stringify({ error: 'HAP 读树失败：' + String(e.message || e).slice(0, 160) })); }
+    }
+    if (u.pathname === '/api/hap-tree-save' && req.method === 'POST') { // 存回云端（写走 MCP 正身，全留痕）
+      let b = ''; req.on('data', c => b += c);
+      req.on('end', async () => {
+        try {
+          const j = JSON.parse(b || '{}');
+          if (!/^[0-9a-f-]{8,}$/i.test(j.rowid || '')) return send(res, 400, '{"error":"bad rowid"}');
+          const tree = typeof j.tree === 'string' ? JSON.parse(j.tree) : j.tree;   // 非法树 JSON 会抛
+          const tool = await hapTool();
+          await tool('update_record', { appId: HAP_APP, worksheet_id: HAP_USER_WS, row_id: j.rowid, fields: [{ id: 'world_tree', value: JSON.stringify(tree) }] });
+          console.log('[hap-tree-save] ' + j.rowid + ' ' + new Date().toISOString());
+          return send(res, 200, '{"ok":true}');
+        } catch (e) { return send(res, 500, JSON.stringify({ error: 'HAP 存树失败：' + String(e.message || e).slice(0, 160) })); }
+      });
+      return;
     }
     if (u.pathname === '/api/audit' && req.method === 'GET') {
       // 世界树体检（11-09 小风加）：维度分布 / 挂文档率 / 断链 / 孤文 / 双份检测 —— 只读，不改任何数据
