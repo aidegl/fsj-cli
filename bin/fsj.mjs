@@ -29,7 +29,43 @@ try {
     const hits = find(arg);
     stamp(performance.now() - t0);
     json ? outJson(hits) : console.log(`【find "${arg}"】${hits.length} 命中\n` + hits.map(r => `- [w${r.weight}] ${r.title}（${DIM[r.dimension] || r.dimension}维 · ${r.rowid}）`).join('\n'));
-  } else if (cmd === 'chat') {
+  } else if (cmd === 'cloud') {
+    // 云端世界树（11-10 东城令：上云做成函数，agent 一条命令，省 token）——ls/pull/push/show
+    const c = await import('../src/cloud.mjs');
+    const [verb, name] = rest;
+    if (verb === 'ls') {
+      const rows = await c.listCloud();
+      stamp(performance.now() - t0);
+      if (json) outJson(rows);
+      else console.log(`【cloud ls】云端 world_tree 非空 ${rows.length} 人`);
+      for (const r of rows) console.log(`- ☁ ${r.name}｜树 ${r.size} 字｜根：${r.root}｜${r.rowid.slice(0,8)}`);
+    } else if (verb === 'pull') {
+      const tree = await c.pull(name);
+      const oi = rest.indexOf('-o');
+      if (oi >= 0 && rest[oi + 1]) {
+        (await import('fs')).writeFileSync(rest[oi + 1], JSON.stringify(tree, null, 2));
+        stamp(performance.now() - t0);
+        console.log(`【cloud pull】${name} → 已落 ${rest[oi + 1]}（${JSON.stringify(tree).length} 字符）`);
+      } else {
+        stamp(performance.now() - t0);
+        if (json) outJson(tree);
+        else console.log(`【cloud pull】${name} 根：${tree.title}｜子分区 ${(tree.children || []).length}（-o <路径> 落文件；--json 出全树）`);
+      }
+    } else if (verb === 'push') {
+      const gi = rest.indexOf('--file'); const fi = rest.indexOf('--name');
+      if (gi < 0 || !rest[gi + 1]) throw new Error('用法：fsj cloud push --name <名字> --file <树.json>');
+      const file = rest[gi + 1]; const nm = fi >= 0 ? rest[fi + 1] : name;
+      const treeStr = (await import('fs')).readFileSync(file, 'utf8');
+      const r = await c.push(nm, treeStr);
+      stamp(performance.now() - t0);
+      if (json) outJson(r); else console.log(`【cloud push】✓ ${r.name}（${r.rowid.slice(0, 8)}）已写云端 world_tree，${r.bytes} 字符`);
+    } else if (verb === 'show') {
+      const tree = await c.pull(name);
+      stamp(performance.now() - t0);
+      console.log(`【cloud show】${name}｜根：${tree.title}｜${tree.description || ''}`);
+      for (const x of (tree.children || [])) console.log(`- [${x.dimension}] ${x.title}`);
+    } else throw new Error('用法：fsj cloud ls|pull <名>|push --name <名> --file <树>|show <名>');
+} else if (cmd === 'chat') {
     // chat 动词族（11-06 东城令）：send/list/read/who —— 一切皆群，私聊=两人的群，寻址 rowid/全名（编号已弃用防漂移）
     const { identity, send, listMine, read, contacts, createGroup, sendGroup, readGroup, groupAdd, groupRemove, dismissGroup } = await import('../src/chat.mjs');
     const [verb, target, ...msgParts] = rest;
