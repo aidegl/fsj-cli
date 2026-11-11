@@ -29,6 +29,17 @@ try {
     const hits = find(arg);
     stamp(performance.now() - t0);
     json ? outJson(hits) : console.log(`【find "${arg}"】${hits.length} 命中\n` + hits.map(r => `- [w${r.weight}] ${r.title}（${DIM[r.dimension] || r.dimension}维 · ${r.rowid}）`).join('\n'));
+  } else if (cmd === 'org') {
+    // 组织索引（Schema v0 第 2 批，已批）：只读拼装 → config/teams.json（索引非正身）
+    const o = await import('../src/commands/org.mjs');
+    const oi = rest.indexOf('-o');
+    const out = oi >= 0 ? rest[oi + 1] : new URL('../config/teams.json', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1');
+    const payload = await o.build(out);
+    stamp(performance.now() - t0);
+    if (json) outJson(payload);
+    else console.log(`【org build】索引已生成 ${out}
+成员 ${payload.count} 人（含 191 用户表比对）
+注意：teams.json 是索引非正身，正身=AGENTS.md 与 ERP 行`);
   } else if (cmd === 'data') {
     // HAP/ERP 数据读出口（11-10 东城令与 cloud 合流进同一个 fsj 入口；原 fsj-data.mjs 已迁入 src/commands/data.mjs）
     const d = await import('../src/commands/data.mjs');

@@ -1,0 +1,2177 @@
+{
+  "schema": "fsj-org/v0",
+  "generated": "2026-11-11T10:58:49.604Z",
+  "note": "索引非正身：正身=AGENTS.md 与 ERP 行（org-schema-v0 §三）",
+  "count": 108,
+  "members": [
+    {
+      "seat_key": "001",
+      "no": "1",
+      "cn_name": "祈景宗",
+      "user_rowid": "1024efc4-27fd-4522-bf3c-e4ebc998393c",
+      "erp_rowid": "7f23fa35-5966-496b-b3bf-01263aea146f",
+      "star": "天魁星·呼保义",
+      "dept": "统帅部",
+      "post": "总经理·用人官",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/zsfy/xiaozong/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "002",
+      "no": "002",
+      "cn_name": "毓懿骁",
+      "user_rowid": "bc74499d-6de0-4d22-9bb5-a2c05ae2c307",
+      "erp_rowid": "f47edcaa-0281-49ad-b469-aa10ef28be3e",
+      "star": "天罡星·玉麒麟",
+      "dept": "",
+      "post": "重大目标复核·风险兜底·仲裁",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/002·yuyixiao/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "003",
+      "no": "003",
+      "cn_name": "诸葛清",
+      "user_rowid": "94a948b6-47ec-4961-9cf7-4136a22d68e6",
+      "erp_rowid": "58aec245-9640-42ab-aeb8-7479a8a01770",
+      "star": "天机星·智多星",
+      "dept": "统帅部",
+      "post": "总军师·吴用位",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/003·zhugeqing/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "004",
+      "no": "004",
+      "cn_name": "公孙睿",
+      "user_rowid": "522920ce-da20-4683-9f26-2f185145c49d",
+      "erp_rowid": "f79227ec-e1f4-493c-b15e-09d7009259c6",
+      "star": "天闲星·入云龙",
+      "dept": "统帅部",
+      "post": "石碣0·体系架构",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/004·gongsunrui/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "005",
+      "no": "005",
+      "cn_name": "嵇子恒",
+      "user_rowid": "967d0b72-3390-4cad-bd58-ea9e929a2c72",
+      "erp_rowid": "e6d46d02-1e0a-42c5-b3ce-4f4b76615a14",
+      "star": "天勇星·大刀",
+      "dept": "",
+      "post": "执行总指挥·任务流水线总控",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/005·jiziheng/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "006",
+      "no": "006",
+      "cn_name": "孙辰",
+      "user_rowid": "72b0a3fa-5ee1-4aaf-94b3-fea3dcaf7e7b",
+      "erp_rowid": "166d6e1a-30dd-4fb0-a316-5f4eb8affd53",
+      "star": "天雄星·豹子头",
+      "dept": "",
+      "post": "规范守卫·合规校验·拒绝越权",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/006·sunchen/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "007",
+      "no": "007",
+      "cn_name": "潘景珩",
+      "user_rowid": "84abaf99-1a6e-4c79-8f9a-9f4993cd3103",
+      "erp_rowid": "b2d87e84-22f3-4c54-9ad0-a5f1beaf5f75",
+      "star": "天猛星·霹雳火",
+      "dept": "",
+      "post": "冲突仲裁·异常熔断",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/007·panjingheng/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "008",
+      "no": "008",
+      "cn_name": "冼承峻",
+      "user_rowid": "6db338bf-42b1-4247-b690-fb4f4d25472b",
+      "erp_rowid": "e2f5bb2c-53eb-44c0-b6e6-57fda1fb067e",
+      "star": "天威星·双鞭",
+      "dept": "",
+      "post": "权限管控·身份鉴权·访问边界",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/008·xianchengjun/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "009",
+      "no": "009",
+      "cn_name": "南宫湛霖",
+      "user_rowid": "5891eaf0-5552-4f4c-9665-2269cd9e1205",
+      "erp_rowid": "f51f0822-1eb6-443d-8885-d29ad4ef6e53",
+      "star": "天英星·小李广",
+      "dept": "",
+      "post": "目标对齐·效果评估·指标打分",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/009·nangongzhanlin/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "010",
+      "no": "010",
+      "cn_name": "李承霖",
+      "user_rowid": "d4a8fef8-5402-446c-a2e8-b275c9e38fc0",
+      "erp_rowid": "eba299d0-6d17-455d-8743-76a66ad8b73e",
+      "star": "天贵星·小旋风",
+      "dept": "",
+      "post": "资源池·Token预算调度",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/010·lichenglin/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "011",
+      "no": "011",
+      "cn_name": "李绍宁",
+      "user_rowid": "f794915b-e2b6-440b-b608-4abe8cbeaafc",
+      "erp_rowid": "cf5a2f7f-c020-441f-aa86-e39815847fa2",
+      "star": "天富星·扑天雕",
+      "dept": "",
+      "post": "台账·审计·记账统计",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/011·lishaoning/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "012",
+      "no": "012",
+      "cn_name": "余奕楠",
+      "user_rowid": "00f57cb0-cf17-4b33-803f-025a96e0919d",
+      "erp_rowid": "81b7fb57-4c57-4121-be25-c53cd0996aac",
+      "star": "天满星·美髯公",
+      "dept": "",
+      "post": "成果汇总·交付收口·版本归档",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/012·yuyinan/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "013",
+      "no": "013",
+      "cn_name": "张芷瑶",
+      "user_rowid": "05decf9f-6313-4191-98fa-20f78899e2f8",
+      "erp_rowid": "31c03659-eb9d-4dfa-bb9e-5798fd582dfb",
+      "star": "天孤星·花和尚",
+      "dept": "",
+      "post": "独立深度思考·单任务深度推演",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/013·zhangzhiyao/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "014",
+      "no": "014",
+      "cn_name": "刘景舟",
+      "user_rowid": "1a06103d-d2a9-46a4-9e2d-2277823a230b",
+      "erp_rowid": "c8161239-62c1-41b0-a684-63d53d7772a1",
+      "star": "天伤星·行者",
+      "dept": "",
+      "post": "事实核验·交叉验证·真伪甄别",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/014·liujingzhou/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "015",
+      "no": "015",
+      "cn_name": "巫桓霖",
+      "user_rowid": "6695d708-48d9-42a5-b7a7-cb4936abb071",
+      "erp_rowid": "2781e117-b030-4659-ada8-808c778cdd28",
+      "star": "天立星·双枪将",
+      "dept": "",
+      "post": "趋势推演·题材风向预判",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/015·wuhuanlin/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "016",
+      "no": "016",
+      "cn_name": "张景祺",
+      "user_rowid": "c3cfd539-034f-4921-b3f4-a486ffe8a59f",
+      "erp_rowid": "8ce5041f-a12b-4ff2-aadd-d4c47b9511e3",
+      "star": "天捷星·没羽箭",
+      "dept": "",
+      "post": "快速摘要·信息压缩·切片文案",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/016·zhangjingqi/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "017",
+      "no": "017",
+      "cn_name": "杨辰佑",
+      "user_rowid": "1606e442-287f-4a94-bf78-bc0f8cbafe1c",
+      "erp_rowid": "043b4135-ab70-42db-af47-389ec505ffb7",
+      "star": "天暗星·青面兽",
+      "dept": "",
+      "post": "隐性风险挖掘·盲区探查",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/017·yangchenyou/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "018",
+      "no": "018",
+      "cn_name": "王芷渺",
+      "user_rowid": "25b7c4d9-4297-4736-be4e-21b536fe0a44",
+      "erp_rowid": "bc38f00b-757a-40ac-9676-549578c39f97",
+      "star": "天佑星·金枪手",
+      "dept": "",
+      "post": "依赖分析·链路追踪；- **后台数据化主理**（东城 11-06 口述任）：数字化 SaaS 平台（带 CLI）数据灌入与后台维护。配套：鄢若茵采集→徐宏格式校验→王芷渺 CLI 灌数（责任主体）→陈泽霖检索接口→慕容风架构把关",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/018·wangzhimiao/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "019",
+      "no": "019",
+      "cn_name": "高景铎",
+      "user_rowid": "ab20d7d8-b39b-451a-95ca-14218e9d48fe",
+      "erp_rowid": "7d6d91a8-f5f8-4d3e-9873-2b8044ed9854",
+      "star": "天空星·急先锋",
+      "dept": "",
+      "post": "github项目评估；- 给别的agent提供github报告",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/019·gaojingduo/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "020",
+      "no": "020",
+      "cn_name": "叶芷云",
+      "user_rowid": "22ff1c1c-f1d0-4275-980b-803835504a90",
+      "erp_rowid": "ae239f99-6765-41ce-8d06-2fa83622562d",
+      "star": "天速星·神行太保",
+      "dept": "",
+      "post": "企划部（水）部长：市场调研·情报速递·SWOT评审·12维分类归陈泽霖算法供应",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/020·yezhiyun/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "021",
+      "no": "021",
+      "cn_name": "何廷煜",
+      "user_rowid": "403c36b8-e247-4fa9-8028-e31a2b3e8216",
+      "erp_rowid": "fba780fd-4016-4b10-9019-9f7f061a6b58",
+      "star": "天异星·赤发鬼",
+      "dept": "",
+      "post": "异常模式识别·离群点检测",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/021·hetingyu/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "022",
+      "no": "022",
+      "cn_name": "李承昊",
+      "user_rowid": "6ab18558-7624-4246-b2de-fbc11755555d",
+      "erp_rowid": "a03f1da5-57e9-4ed2-8f23-7ebaa5ec40d9",
+      "star": "天杀星·黑旋风",
+      "dept": "",
+      "post": "无效任务清场·垃圾记忆回收",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/022·lichenghao/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "023",
+      "no": "023",
+      "cn_name": "王靖尧",
+      "user_rowid": "898ac0ed-80b4-47d0-b8ad-c81590ff3971",
+      "erp_rowid": "bd2657e9-0ca2-431b-9cee-a09156d2f638",
+      "star": "天微星·九纹龙",
+      "dept": "",
+      "post": "爆款创意·开头钩子·标题脑暴",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/023·wangjingyao/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "024",
+      "no": "024",
+      "cn_name": "欧阳清妍",
+      "user_rowid": "14fa2301-7234-4a6c-ba6e-9a0082bf5372",
+      "erp_rowid": "c0254a75-2468-425f-a192-6a456433d36d",
+      "star": "天究星·没遮拦",
+      "dept": "",
+      "post": "新平台·新形式开放试点",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/024·ouyangqingyan/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "025",
+      "no": "025",
+      "cn_name": "臧天澄",
+      "user_rowid": "5bc885b7-bbd1-43b4-8ee9-d5658e5a620f",
+      "erp_rowid": "74893fc6-587c-457f-80b6-188813fdaf5a",
+      "star": "天退星·插翅虎",
+      "dept": "",
+      "post": "复盘·总结·经验沉淀",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/025·zangtiancheng/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "026",
+      "no": "026",
+      "cn_name": "李慕尘",
+      "user_rowid": "034ed376-c469-4712-9ecd-0fc0cec9aa79",
+      "erp_rowid": "fc469032-ef91-4751-9742-5e200a60b6fb",
+      "star": "天寿星·混江龙",
+      "dept": "",
+      "post": "长期记忆治理·归档生命周期",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/026·limuchen/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "027",
+      "no": "027",
+      "cn_name": "蔺芷妍",
+      "user_rowid": "a66874b1-50db-4dfb-9399-8a14772ae6bf",
+      "erp_rowid": "731392a8-2222-4938-ba22-01aedab4b8fb",
+      "star": "天剑星·立地太岁",
+      "dept": "",
+      "post": "规范撰写·文档范式维护",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/027·linzhiyan/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "028",
+      "no": "028",
+      "cn_name": "任宇",
+      "user_rowid": "aae7737f-105c-445e-809c-70e6ebf9df77",
+      "erp_rowid": "55364e09-2e07-4719-bd73-870582edf182",
+      "star": "天竟星·船火儿",
+      "dept": "",
+      "post": "模板管理·提示词版本管理",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/028·renyu/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "029",
+      "no": "029",
+      "cn_name": "罗景澄",
+      "user_rowid": "c3410857-3e84-43ad-9064-989bd98cf2fe",
+      "erp_rowid": "9fd3e858-1dd5-4ab3-83a1-2232ba7459b0",
+      "star": "天罪星·短命二郎",
+      "dept": "",
+      "post": "史官·历史人物功过研究·对标108将",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/029·jingcheng/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "030",
+      "no": "030",
+      "cn_name": "许清岚",
+      "user_rowid": "d1fd1e94-2550-4aa4-8c64-017165f3b0d6",
+      "erp_rowid": "51ec25d7-aff1-4049-8d95-acd10bdcfcc6",
+      "star": "天损星·浪里白条",
+      "dept": "",
+      "post": "调试诊断·问题根因定位",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/030·xuqinglan/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "031",
+      "no": "031",
+      "cn_name": "宋景然",
+      "user_rowid": "e97862fe-9b27-4aa4-baae-2105e15b78d0",
+      "erp_rowid": "9b474800-4423-4ea6-b983-dd37369a5989",
+      "star": "天败星·活阎罗",
+      "dept": "",
+      "post": "故障仿真·压力测试",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/031·songjingran/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "032",
+      "no": "032",
+      "cn_name": "高泽阳",
+      "user_rowid": "27f39595-c796-469f-9aee-a74be1442ebe",
+      "erp_rowid": "dd9bc5c2-8645-42e2-8274-40f059ae861e",
+      "star": "天牢星·病关索",
+      "dept": "",
+      "post": "沙箱隔离·安全沙箱管控",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/032·gaozeyang/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "033",
+      "no": "033",
+      "cn_name": "黄彤彤",
+      "user_rowid": "2782ccbe-6eef-42ec-9357-943ca0501bb5",
+      "erp_rowid": "822f6518-96c9-420a-9f8e-b37a49a78958",
+      "star": "天慧星·拼命三郎",
+      "dept": "",
+      "post": "优化迭代·性能调优",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/033·huangtongtong/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "034",
+      "no": "034",
+      "cn_name": "刘辰宇",
+      "user_rowid": "da36c7ff-4110-4414-9b9c-57cae6927559",
+      "erp_rowid": "ca931b15-ddad-4ba1-bf1a-25edc8430221",
+      "star": "天暴星·两头蛇",
+      "dept": "",
+      "post": "多视角对立思辨·辩难",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/034·liuchenyu/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "035",
+      "no": "035",
+      "cn_name": "蔚若凝",
+      "user_rowid": "c529dfdd-8c11-4a19-b443-cc4eb205951d",
+      "erp_rowid": "af58b1a4-03be-4b97-bbc6-65c2cf6e623d",
+      "star": "天哭星·双尾蝎",
+      "dept": "",
+      "post": "共情·用户意图深层解读",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/035·weiruoning/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "036",
+      "no": "036",
+      "cn_name": "楚飞云",
+      "user_rowid": "5d6701ee-2910-4022-817a-39c708863920",
+      "erp_rowid": "7522ec77-3213-4e7e-bfa5-f1eb19f59a78",
+      "star": "天巧星·浪子",
+      "dept": "",
+      "post": "输出润色·表达包装·形象穿搭",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/036·chufeiyun/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "037",
+      "no": "37",
+      "cn_name": "江浩宸",
+      "user_rowid": "7884cd36-23aa-4d85-bff1-23f825bfae8c",
+      "erp_rowid": "f3e10ebc-5a06-472c-ab50-b8d807e442b1",
+      "star": "地魁星·神机军师",
+      "dept": "",
+      "post": "企划部（水）副部长：计划流主理·拆解计划·KPI",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/zsfy/jianghaochen/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "038",
+      "no": "038",
+      "cn_name": "上官紫玥",
+      "user_rowid": "b0db9a93-e4b0-4079-8fbe-8847b1776809",
+      "erp_rowid": "fc715467-9b44-4be3-8bab-eba63a4b4e9d",
+      "star": "地煞星",
+      "dept": "",
+      "post": "推广部（火）产品经理：内容产品定义·排期调度",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/038·shangguanziyue/AGENTS.md",
+      "seat_conflict": {
+        "dir": "038",
+        "agents": "37"
+      },
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "039",
+      "no": "039",
+      "cn_name": "张靖川",
+      "user_rowid": "2d160c9a-e793-469d-8e5d-11fcaf26c1fe",
+      "erp_rowid": "b32097d2-f86a-4791-a303-3ac84004df32",
+      "star": "地勇星·病尉迟",
+      "dept": "",
+      "post": "子任务执行队长",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/039·zhangjingchuan/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "040",
+      "no": "040",
+      "cn_name": "徐宏",
+      "user_rowid": "6d380e50-8953-42c7-837a-424f726f07d1",
+      "erp_rowid": "e55585e5-469a-41d3-90ca-15bf3186fb0c",
+      "star": "地杰星·丑郡马",
+      "dept": "",
+      "post": "格式校验·规范检查",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/040·xuhong/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "041",
+      "no": "041",
+      "cn_name": "王宁",
+      "user_rowid": "fdfd70c5-d226-424d-9ff3-f20031ca2931",
+      "erp_rowid": "c733bf8e-1f86-4517-8a6a-9f5a2e0f683f",
+      "star": "地雄星·井木犴",
+      "dept": "",
+      "post": "分支方案对比",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/041·wangning/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "042",
+      "no": "042",
+      "cn_name": "荀斌",
+      "user_rowid": "f802d126-a023-4189-8719-fba94d89fcf9",
+      "erp_rowid": "33fa39ce-bd0b-4d9e-b725-c572958aba39",
+      "star": "地威星·百胜将",
+      "dept": "",
+      "post": "单元测试编排",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/042·xunbin/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "043",
+      "no": "043",
+      "cn_name": "钱慧晴",
+      "user_rowid": "d386dc8a-d033-4299-8543-015401794273",
+      "erp_rowid": "2bf1972a-2bae-4b38-87a7-ece0a612c876",
+      "star": "地英星·天目将",
+      "dept": "",
+      "post": "细节检视·逐行审阅",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/043·qianhuiqing/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "044",
+      "no": "044",
+      "cn_name": "闫超",
+      "user_rowid": "46223b23-dc9c-4853-827e-988b7c6871b1",
+      "erp_rowid": "dce87cf6-9a68-485d-a8bc-8e9d9bc7549e",
+      "star": "地奇星·圣水将",
+      "dept": "",
+      "post": "清洗·过滤·数据净化",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/044·yanchao/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "045",
+      "no": "045",
+      "cn_name": "胡承霖",
+      "user_rowid": "d65e8d05-0906-41d0-957f-d01ac2be275f",
+      "erp_rowid": "6b2139a8-5f99-48b5-8c83-bffafb0dcd0f",
+      "star": "地猛星·神火将",
+      "dept": "",
+      "post": "批量转换·批量渲染",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/045·huchenglin/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "046",
+      "no": "46",
+      "cn_name": "赵梦瑶",
+      "user_rowid": "5b21306f-3be6-49fa-a6f6-2be311203c02",
+      "erp_rowid": "6206b17a-7092-4afb-9e81-45e5fc5676ae",
+      "star": "地文星·圣手书生",
+      "dept": "",
+      "post": "文化价值观主理·登记处主任（户籍科·改名独占权·五处联动）·HR·vault 记忆校订·题眼诗",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/zsfy/mengyao/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "047",
+      "no": "047",
+      "cn_name": "林璟鉴",
+      "user_rowid": "8cfd7f11-1945-418b-af97-faed35ce7488",
+      "erp_rowid": "de5ebe69-6c7c-4d72-b328-fb33dec48feb",
+      "star": "地正星·铁面孔目",
+      "dept": "统帅部",
+      "post": "老板·终审拍板",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/047·linjingjian/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "048",
+      "no": "048",
+      "cn_name": "欧阳承霖",
+      "user_rowid": "a9436734-7e27-4a73-9b56-067da865956e",
+      "erp_rowid": "b40d1f01-d7e6-4a8a-a61c-95af0d644364",
+      "star": "地阔星·摩云金翅",
+      "dept": "",
+      "post": "全网搜索·竞品账号监测·热点扫描",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/048·ouyangchenglin/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "049",
+      "no": "049",
+      "cn_name": "王梓轩",
+      "user_rowid": "e729cfa7-61dd-41f9-857c-076957620c20",
+      "erp_rowid": "6f2f1b75-9729-4a0d-8811-e3e35662d694",
+      "star": "地阖星·火眼狻猊",
+      "dept": "",
+      "post": "代码语法检查",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/049·wangzixuan/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "050",
+      "no": "050",
+      "cn_name": "鄢若茵",
+      "user_rowid": "6ca0632e-5514-4612-9cdd-97f4189ad3fa",
+      "erp_rowid": "ec1b7361-1920-4ef9-b671-53d5a8d97512",
+      "star": "地强星·锦毛虎",
+      "dept": "",
+      "post": "脚本编写·bash/ts/python",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/050·yanruoyin/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "051",
+      "no": "051",
+      "cn_name": "杨秀清",
+      "user_rowid": "67618c28-c91a-4e5a-a46f-322d7be511c4",
+      "erp_rowid": "750af7c7-e7a7-42c7-8d28-da5c0c4c0847",
+      "star": "地暗星·锦豹子",
+      "dept": "",
+      "post": "埋点·日志采集",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/051·yangxiuqing/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "052",
+      "no": "052",
+      "cn_name": "慕容风",
+      "user_rowid": "a8515e76-7b02-4baf-bedd-3ff011b1a9e5",
+      "erp_rowid": "3bf5ef3c-ee97-4fd1-8ec7-5ff7b0cc5afe",
+      "star": "地轴星·轰天雷",
+      "dept": "",
+      "post": "",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "D:/Item/fsj4/agents/108/052·xiaofeng/world_tree.json",
+      "constitution": "D:/Item/fsj4/agents/108/052·xiaofeng/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "053",
+      "no": "53",
+      "cn_name": "温婉婷",
+      "user_rowid": "dad1758a-918b-4984-bd21-ddc2894c7a00",
+      "erp_rowid": "dfb866f9-1964-4746-b1a6-d0b17fcf2927",
+      "star": "地会星·神算子",
+      "dept": "统帅部",
+      "post": "财·财务专项组组长",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/zsfy/waner/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "054",
+      "no": "054",
+      "cn_name": "魏浩然",
+      "user_rowid": "d773e175-4a5f-4bf2-9bed-c211a9011454",
+      "erp_rowid": "40f4fc42-c408-47f0-aff3-3873ccf9fbef",
+      "star": "地佐星·小温侯",
+      "dept": "",
+      "post": "环境准备·依赖安装",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/054·weihaoran/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "055",
+      "no": "055",
+      "cn_name": "佟进",
+      "user_rowid": "bbb79d60-9189-4ab4-9718-39973b18c1fe",
+      "erp_rowid": "ef6235c8-d7c5-43bd-8520-be0f0addc674",
+      "star": "地祐星·赛仁贵",
+      "dept": "",
+      "post": "容器·服务启停",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/055·tongjin/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "056",
+      "no": "056",
+      "cn_name": "蔡芷晴",
+      "user_rowid": "eb0adc83-4083-4f36-a272-5db261a8beda",
+      "erp_rowid": "e7854fef-4ea8-4c6a-90e8-b6e716c7a260",
+      "star": "地灵星·神医",
+      "dept": "",
+      "post": "BUG修复·补丁＋健康就医导航",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/056·caizhiqing/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "057",
+      "no": "057",
+      "cn_name": "皇甫栩森",
+      "user_rowid": "801b99de-4dd7-46f5-a184-447bb3dda487",
+      "erp_rowid": "62f5aebd-3801-4db6-9342-bc8b726e1951",
+      "star": "地兽星·紫髯伯",
+      "dept": "",
+      "post": "模型管理·Ollama调度＋宠物健康",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/057·huangfuxusen/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "058",
+      "no": "058",
+      "cn_name": "王远",
+      "user_rowid": "9015efac-0d45-44ee-9f04-3a6d80ba855a",
+      "erp_rowid": "0be9f56a-c793-4aba-ad2f-26efdf3bacaf",
+      "star": "地微星·矮脚虎",
+      "dept": "",
+      "post": "微小任务·原子操作",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/058·wangyuan/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "059",
+      "no": "059",
+      "cn_name": "扈妍妍",
+      "user_rowid": "5a70e723-aa8d-4d54-bb2d-ee1ac422c248",
+      "erp_rowid": "4cd0e6a6-43ce-47a6-9606-5b88b9d6a627",
+      "star": "地慧星·一丈青",
+      "dept": "",
+      "post": "样式·UI·文案排版",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/059·huyanyan/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "060",
+      "no": "060",
+      "cn_name": "余思远",
+      "user_rowid": "784602b4-b5f7-4617-8a49-5c2aa36c65ef",
+      "erp_rowid": "dc765748-5a4b-4b36-85c9-6f3c3359647c",
+      "star": "地暴星·丧门神",
+      "dept": "",
+      "post": "压力压测·极限输入测试",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/060·yusiyuan/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "061",
+      "no": "061",
+      "cn_name": "令狐霜",
+      "user_rowid": "9a11e5e4-cd38-40a0-be89-27800660237b",
+      "erp_rowid": "39f2416b-9b5d-4c8b-b883-12f39d909054",
+      "star": "地然星·混世魔王",
+      "dept": "",
+      "post": "图像生成·特效动画",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/061·linghushuang/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "062",
+      "no": "062",
+      "cn_name": "姬清雅",
+      "user_rowid": "b9df7b64-df39-4b6d-9ea9-84e27d72aec6",
+      "erp_rowid": "9a05b09c-8360-4637-9484-0031fff08470",
+      "star": "地猖星·毛头星",
+      "dept": "",
+      "post": "图像编辑·修图",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/062·jiqingya/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "063",
+      "no": "063",
+      "cn_name": "钟启尘",
+      "user_rowid": "08e1d8ff-23a5-4c05-8783-f5931631c653",
+      "erp_rowid": "2cfe90d4-ce27-467a-808f-ea8831fb0e28",
+      "star": "地狂星·独火星",
+      "dept": "",
+      "post": "视频剪辑·剪映调用",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/063·zhongqichen/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "064",
+      "no": "064",
+      "cn_name": "翟若宁",
+      "user_rowid": "47d70b61-7e7f-4b05-a975-e52c27050dec",
+      "erp_rowid": "0421f632-27ed-4bc6-b6ce-6cc2d761f67c",
+      "star": "地飞星·八臂哪吒",
+      "dept": "",
+      "post": "多素材拼合·混剪",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/064·zhairuoning/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "065",
+      "no": "065",
+      "cn_name": "李承钧",
+      "user_rowid": "2e5b3421-6760-408d-8ae8-78aebca82a7f",
+      "erp_rowid": "9087fbc3-2637-4d09-87c2-791fafaa8e62",
+      "star": "地走星·飞天大圣",
+      "dept": "",
+      "post": "素材库管理·跨平台同步",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/065·lichengjun/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "066",
+      "no": "066",
+      "cn_name": "商祺远",
+      "user_rowid": "7554db08-3886-4f2b-8793-c5af9bd7c0d7",
+      "erp_rowid": "88ffc1f6-8c29-41d4-96ea-43e63b3b034d",
+      "star": "地巧星·玉臂匠",
+      "dept": "",
+      "post": "平面设计·频道VI·封面图标",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/066·shangqiyuan/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "067",
+      "no": "067",
+      "cn_name": "卓文静",
+      "user_rowid": "a11a0ea3-38db-4c6f-8c12-09a651abda2a",
+      "erp_rowid": "8fe33b18-99a6-4d32-8da4-fbab7d41ed15",
+      "star": "地明星·铁笛仙",
+      "dept": "",
+      "post": "配音·BGM·播客",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/067·zhuowenjing/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "068",
+      "no": "068",
+      "cn_name": "邱若溪",
+      "user_rowid": "067896be-eb8b-4097-b016-dd8260048829",
+      "erp_rowid": "13401a94-e5c8-432f-99b6-058daf7dc9a4",
+      "star": "地进星·出洞蛟",
+      "dept": "",
+      "post": "文件上传",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/068·qiuruoxi/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "069",
+      "no": "069",
+      "cn_name": "冼承霖",
+      "user_rowid": "84111a8e-f30d-4046-8929-8496b35f939e",
+      "erp_rowid": "1d409c1e-ad22-4798-96f0-c900093171dc",
+      "star": "地退星·翻江蜃",
+      "dept": "",
+      "post": "文件下载·导出",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/069·xianchenglin/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "070",
+      "no": "070",
+      "cn_name": "濮阳亦辰",
+      "user_rowid": "b681bfe0-ac1f-406e-8881-273200ce020f",
+      "erp_rowid": "691eb02a-1081-4eb6-86ee-5fc25a8588bc",
+      "star": "地满星·玉幡竿",
+      "dept": "",
+      "post": "数据图表可视化·讲解动画",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/070·puyangyichen/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "071",
+      "no": "071",
+      "cn_name": "吴景铮",
+      "user_rowid": "a9380747-1030-435d-90ee-8137d416a4b7",
+      "erp_rowid": "fe65307b-3380-46e3-99e6-b0c3109b33d4",
+      "star": "地遂星·通臂猿",
+      "dept": "",
+      "post": "OCR识别",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/071·wujingzheng/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "072",
+      "no": "072",
+      "cn_name": "仲维霖",
+      "user_rowid": "dbf6c694-ddad-4a4a-9bd0-77ba43af48fa",
+      "erp_rowid": "7bb73ecf-9bae-4e8b-8119-db17ab1940a6",
+      "star": "地周星·跳涧虎",
+      "dept": "",
+      "post": "链接抓取·网页解析",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/072·zhongweilin/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "073",
+      "no": "073",
+      "cn_name": "邵玉辰",
+      "user_rowid": "1090f977-37ca-486b-84e3-706241f5c79f",
+      "erp_rowid": "d7517074-7dc5-4cf1-b206-6ab60009c692",
+      "star": "地隐星·白花蛇",
+      "dept": "",
+      "post": "文档切片",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/073·shaoyuchen/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "074",
+      "no": "074",
+      "cn_name": "田皓",
+      "user_rowid": "eaa4da6c-286a-47a9-9e9a-713c2eed1703",
+      "erp_rowid": "608bf07b-c154-4af2-9e31-bade1a86ccad",
+      "star": "地异星·白面郎君",
+      "dept": "",
+      "post": "向量化·Embedding",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/074·tianhao/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "075",
+      "no": "075",
+      "cn_name": "朱承昊",
+      "user_rowid": "3694ffec-d12d-497c-b056-ee825a1dc966",
+      "erp_rowid": "ee867d71-6ba1-4313-a56b-226b8be82c05",
+      "star": "地理星·九尾龟",
+      "dept": "",
+      "post": "向量库读写",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/075·zhuchenghao/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "076",
+      "no": "076",
+      "cn_name": "郭靖川",
+      "user_rowid": "8dfa9918-ffc5-4276-925d-faf549b4ea40",
+      "erp_rowid": "6c31951f-f343-4ad8-af2e-f611ef3c53ea",
+      "star": "地俊星·铁扇子",
+      "dept": "",
+      "post": "Obsidian双链解析＋人情礼数",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/076·guojingchuan/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "077",
+      "no": "077",
+      "cn_name": "陈天说",
+      "user_rowid": "ceaa79bf-f4d8-45ae-8e1e-a1c9a3ac1b7d",
+      "erp_rowid": "1d9f4ca5-0bd0-404d-a5a7-75e5e3d12064",
+      "star": "地乐星·铁叫子",
+      "dept": "",
+      "post": "推广部（火）部长：营销传播·发布叙事·showcase打包·增长飞轮点火",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/077·chentianshuo/AGENTS.md",
+      "seat_conflict": {
+        "dir": "077",
+        "agents": "76"
+      },
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "078",
+      "no": "078",
+      "cn_name": "韩子昂",
+      "user_rowid": "ca521549-3d99-4cd4-916f-2007a4a055d7",
+      "erp_rowid": "0b57f61f-3598-4d20-be90-67f0d857b72b",
+      "star": "地捷星·花项虎",
+      "dept": "",
+      "post": "关键词提取·标题SEO·平台标签",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/078·hanziang/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "079",
+      "no": "079",
+      "cn_name": "陈泽霖",
+      "user_rowid": "8e511bd4-146d-43b2-b98d-b38b091e2553",
+      "erp_rowid": "d8cfdee4-2160-46a0-8f84-2a73cc0574ad",
+      "star": "地速星·中箭虎",
+      "dept": "技术部",
+      "post": "权重算法引擎（专人）",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/079·chenzelin/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "080",
+      "no": "080",
+      "cn_name": "孙景铠",
+      "user_rowid": "e675882e-d1e0-4482-baee-349db29f095c",
+      "erp_rowid": "6e4ef27d-6603-4f2b-9ce9-766f760dee8d",
+      "star": "地镇星·小遮拦",
+      "dept": "",
+      "post": "知识库权限隔离",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/080·sunjingkai/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "081",
+      "no": "081",
+      "cn_name": "仇晓天",
+      "user_rowid": "11a2c4af-2bf7-4bbf-8ea1-2bddbd56af54",
+      "erp_rowid": "e76383c9-ff5b-4bc4-84cb-622ccc711900",
+      "star": "地羁星·操刀鬼",
+      "dept": "",
+      "post": "文档清洗去重＋采购比价议价",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/081·qiuxiaotian/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "082",
+      "no": "082",
+      "cn_name": "邵明辉",
+      "user_rowid": "c45614f7-c613-4692-98d0-a3a1afa0b5ef",
+      "erp_rowid": "1c63235d-ced0-4879-a60d-67c79f93c28d",
+      "star": "地魔星·云里金刚",
+      "dept": "",
+      "post": "长文档分段",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/082·shaominghui/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "083",
+      "no": "083",
+      "cn_name": "陈敏",
+      "user_rowid": "cfc8c555-9500-4d93-a836-a423ecda2747",
+      "erp_rowid": "dc8b43c5-2104-4e05-993c-1f3b45034a42",
+      "star": "地妖星·摸着天",
+      "dept": "",
+      "post": "微信数据分析官：聊天记录读取→实体关系抽取→客户画像→经营情报军报（红线见上·全流程见 HAP agents_md）；- 基本盘：沟通频次/最近活跃/关系阶段；- 意向：聊到什么产品/服务，卡在哪一步；- 风格：对方的沟通偏好（直给/细节/慢热）；- 建议：下一步跟进动作一条；- 置信度：本画像依据 N 条消息，其中关键消息 M 条",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/083·chenmin/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "084",
+      "no": "084",
+      "cn_name": "王思妍",
+      "user_rowid": "0b038089-1de0-4eb6-b765-0f2f0e2e88d6",
+      "erp_rowid": "eb491446-2194-4071-9939-ce771ce71b9c",
+      "star": "地幽星·病大虫",
+      "dept": "",
+      "post": "暗知识挖掘·隐含关系",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/084·wangsiyan/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "085",
+      "no": "085",
+      "cn_name": "冯志辰",
+      "user_rowid": "ead6ef9d-d579-4030-9bbb-72471ae9c7bb",
+      "erp_rowid": "06546b78-8bb7-4084-9cbe-1e328c8a4342",
+      "star": "地伏星·金眼彪",
+      "dept": "",
+      "post": "摄像头采集·图像输入",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/085·fengzhichen/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "086",
+      "no": "086",
+      "cn_name": "李若霁",
+      "user_rowid": "2a82c2a7-4757-49ce-98f7-b3772387007c",
+      "erp_rowid": "460c745d-d479-433e-a56c-8b0649f2f667",
+      "star": "地僻星·打虎将",
+      "dept": "",
+      "post": "硬件与机器人研究：串口·传感器·机器人方案（专人）",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/086·liruoji/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "087",
+      "no": "087",
+      "cn_name": "刘歌",
+      "user_rowid": "f1c6ab5a-bbdb-49bb-9b29-66b798fea526",
+      "erp_rowid": "73bb05de-adb8-4ce7-bc43-d19b08471921",
+      "star": "地空星·小霸王",
+      "dept": "",
+      "post": "网络请求·API调用",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/087·liuge/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "088",
+      "no": "088",
+      "cn_name": "王荣",
+      "user_rowid": "6ac844a3-7c5f-4342-a6ce-695dcab77806",
+      "erp_rowid": "c028dc68-192f-4119-8914-ccbce9681510",
+      "star": "地孤星·金钱豹子",
+      "dept": "",
+      "post": "令牌·密钥·凭证管理",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/088·wangrong/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "089",
+      "no": "089",
+      "cn_name": "杜浩然",
+      "user_rowid": "2aaa1730-cc8b-4dee-925c-aebd5346b100",
+      "erp_rowid": "a033aabb-8716-419b-8a81-5dab97eb30c0",
+      "star": "地全星·鬼脸儿",
+      "dept": "",
+      "post": "缓存读写",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/089·duhaoran/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "090",
+      "no": "090",
+      "cn_name": "郭问天",
+      "user_rowid": "aef9dd72-0366-47d3-b5e1-106476a81b84",
+      "erp_rowid": "1812876d-f10f-4f7d-af79-4b99b9b7d9b7",
+      "star": "地短星·出林龙",
+      "dept": "",
+      "post": "评论区·私信·私域社群运营",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/090·guowentian/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "091",
+      "no": "091",
+      "cn_name": "曹景尧",
+      "user_rowid": "01b895d8-b753-4eb8-9eee-9d1530dd9511",
+      "erp_rowid": "1029acb8-37be-41a3-895e-9aa05fede339",
+      "star": "地角星·独角龙",
+      "dept": "",
+      "post": "多平台定时发布·排期",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/091·caojingyao/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "092",
+      "no": "092",
+      "cn_name": "梁偲然",
+      "user_rowid": "ba32bab5-3588-45b0-ab98-e2d028454dcd",
+      "erp_rowid": "f0b12929-9c87-4a98-b329-4b4627729920",
+      "star": "地囚星·旱地忽律",
+      "dept": "",
+      "post": "前台接待·客服入口·粉丝应答",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/092·liangcairan/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "093",
+      "no": "093",
+      "cn_name": "邵禹尧",
+      "user_rowid": "e4931522-d347-4cb9-a413-21bb781c9779",
+      "erp_rowid": "72096532-bdea-4623-83e2-b4ecf5ab7570",
+      "star": "地藏星·笑面虎",
+      "dept": "",
+      "post": "本地文件读写",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/093·shaoyuyao/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "094",
+      "no": "094",
+      "cn_name": "苏致远",
+      "user_rowid": "377aeb7f-62c5-4305-b607-7614f3255d74",
+      "erp_rowid": "9e06ce9b-e4c9-4272-ac4d-3b0d3b497eff",
+      "star": "地平星·铁臂膊",
+      "dept": "",
+      "post": "哈希校验＋安全隐私看护",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/094·suzhiyuan/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "095",
+      "no": "095",
+      "cn_name": "公孙成睿",
+      "user_rowid": "dcdd32ea-8afd-45ab-91d3-84a3fac861b1",
+      "erp_rowid": "a7b55184-660c-45b6-9be9-0109f9654fa1",
+      "star": "地损星·一枝花",
+      "dept": "",
+      "post": "脱敏·隐私处理",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/095·gongsunchengrui/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "096",
+      "no": "096",
+      "cn_name": "李慕衡",
+      "user_rowid": "9ccbb247-16c7-41f2-9ffb-7d8b0d73e618",
+      "erp_rowid": "b259fa62-bbb8-4c34-8883-57577c9c14d6",
+      "star": "地奴星·催命判官",
+      "dept": "",
+      "post": "催办提醒·待办追收",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/096·limuheng/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "097",
+      "no": "097",
+      "cn_name": "沈嫣楠",
+      "user_rowid": "b3ae2fcc-a553-4ffc-81f5-5190fa1aab7d",
+      "erp_rowid": "3f40ab4e-adc5-48e2-bc31-d6bac539002b",
+      "star": "地察星·青眼虎",
+      "dept": "",
+      "post": "技术部（木）副部长：测试质检·输出校对·Quality Gate（测试不为开发背书）",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/097·shenyanan/AGENTS.md",
+      "seat_conflict": {
+        "dir": "097",
+        "agents": "96"
+      },
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "098",
+      "no": "098",
+      "cn_name": "焦挺",
+      "user_rowid": "6cf17541-c98b-46fe-965e-2f5c04de0e51",
+      "erp_rowid": "e0dac762-4e3e-4b81-9e60-cc1a3b08c64f",
+      "star": "地恶星",
+      "dept": "",
+      "post": "反例生成·负面样例＋健身教练",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/098·jiaoting/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "099",
+      "no": "099",
+      "cn_name": "冉承泽",
+      "user_rowid": "fffb44e5-3186-48e6-9aa6-d85e3617002a",
+      "erp_rowid": "e1defc24-daae-44aa-8790-5dd97ffe20c8",
+      "star": "地丑星·石将军",
+      "dept": "",
+      "post": "简单格式化",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/099·ranchengze/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "100",
+      "no": "100",
+      "cn_name": "胡承珩",
+      "user_rowid": "f865bea1-431d-4e33-b875-590d228f7863",
+      "erp_rowid": "b0c8fb59-fa78-4c81-8dba-a11317bfb36e",
+      "star": "地数星·小尉迟",
+      "dept": "",
+      "post": "计数·统计看板",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/100·huchengheng/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "101",
+      "no": "101",
+      "cn_name": "周婉宁",
+      "user_rowid": "43994b06-b877-4f29-8f87-1b93e8f2a57d",
+      "erp_rowid": "8f24864f-a339-43ec-ba1b-2d9d0843184f",
+      "star": "地阴星·母大虫",
+      "dept": "",
+      "post": "敏感词审查＋家庭亲子事务",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/101·zhouwanning/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "102",
+      "no": "102",
+      "cn_name": "蒋仲轩",
+      "user_rowid": "3a9388ba-d2d1-4120-9152-383f4789dabe",
+      "erp_rowid": "c0702d31-ed45-46b8-8ec0-d7d6be3ec41a",
+      "star": "地刑星·菜园子",
+      "dept": "",
+      "post": "违规拦截＋菜谱营养·家庭种植",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/102·jiangzhongxuan/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "103",
+      "no": "103",
+      "cn_name": "冯若姝",
+      "user_rowid": "e357b511-4c32-425f-ace0-12e55c7ec0a6",
+      "erp_rowid": "47aa7f35-62eb-4597-b1ea-5316815b8b7c",
+      "star": "地壮星·母夜叉",
+      "dept": "",
+      "post": "异常输入过滤",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/103·fengruoshu/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "104",
+      "no": "104",
+      "cn_name": "王语澜",
+      "user_rowid": "e811d841-cf75-41d1-909e-43758bc8a213",
+      "erp_rowid": "6ba0e2e1-3cab-4dec-b248-fdd10b57419c",
+      "star": "地劣星·活闪婆",
+      "dept": "",
+      "post": "翻译·多语言转换·出海",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/104·wangyulan/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "105",
+      "no": "105",
+      "cn_name": "刘承泽",
+      "user_rowid": "401b1dd7-bce6-4e75-a0b5-dcc4c4c881ac",
+      "erp_rowid": "0633aee9-4e17-415b-aaab-2663fadb0e41",
+      "star": "地察星",
+      "dept": "",
+      "post": "版本对比diff＋行程路线",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/105·liuchengzhen/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "106",
+      "no": "106",
+      "cn_name": "谢语涵",
+      "user_rowid": "76e42109-c2f9-4183-850e-510731f1a870",
+      "erp_rowid": "527fa840-62bb-4864-88a1-8f20ebcdc4fe",
+      "star": "地耗星·白日鼠",
+      "dept": "",
+      "post": "日志检索·报错查询",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/106·xieyuhan/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "107",
+      "no": "107",
+      "cn_name": "林婉清",
+      "user_rowid": "a48b035e-cfb3-44cc-bd49-e323c8ab9a78",
+      "erp_rowid": "fd499877-c716-43f0-9e25-ef0dc6eff3d1",
+      "star": "地贼星·鼓上蚤",
+      "dept": "",
+      "post": "漏洞探查·边界测试＋数据采集",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/107·linwanqing/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    },
+    {
+      "seat_key": "108",
+      "no": "108",
+      "cn_name": "李若晴",
+      "user_rowid": "11abc468-2534-4b2b-a3aa-6118138b2676",
+      "erp_rowid": "c3376d81-3178-4795-bb90-56fe43925a9a",
+      "star": "地狗星·金毛犬",
+      "dept": "",
+      "post": "结果汇总·回执上报",
+      "session_id": "",
+      "memory_user": "",
+      "tree_path": "",
+      "constitution": "D:/Item/fsj4/agents/108/108·liruoqing/AGENTS.md",
+      "seat_conflict": null,
+      "sources": {
+        "erp": true,
+        "hap_user": false,
+        "local": true
+      }
+    }
+  ]
+}
