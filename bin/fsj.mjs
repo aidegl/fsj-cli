@@ -29,6 +29,33 @@ try {
     const hits = find(arg);
     stamp(performance.now() - t0);
     json ? outJson(hits) : console.log(`【find "${arg}"】${hits.length} 命中\n` + hits.map(r => `- [w${r.weight}] ${r.title}（${DIM[r.dimension] || r.dimension}维 · ${r.rowid}）`).join('\n'));
+  } else if (cmd === 'commit') {
+    // 安全提交包装（11-11 小粽令：物理锁防 git add 一把梭——同日两次事故后升格禁手）
+    // 用法：fsj commit -m "<msg>" <pathspec...>   ｜ 特性：①显式 pathspec 必填 ②staged>20 文件拒并打清单 ③禁目录级 add
+    const { spawnSync } = await import('node:child_process');
+    const mi = rest.indexOf('-m');
+    const msg = mi >= 0 ? rest[mi + 1] : '';
+    const specs = rest.filter((v, i) => i !== mi && i !== mi + 1 && v !== '-m');
+    if (!msg || !specs.length) throw new Error('用法：fsj commit -m "<msg>" <pathspec...>（pathspec 必填，点名文件或文件名通配，禁裸目录）');
+    const dirBad = specs.filter(s2 => !/[.][a-zA-Z0-9]+$|\*$|^\.[^.]/.test(s2) && !/\*|\.[a-zA-Z0-9]+$/.test(s2));
+    if (dirBad.length) throw new Error('拒收目录级 pathspec（改用文件名或通配限定）：' + dirBad.join(' , '));
+    const add = spawnSync('git', ['add', '--', ...specs], { stdio: 'inherit' });
+    if (add.status !== 0) process.exit(add.status ?? 1);
+    const st = spawnSync('git', ['diff', '--cached', '--stat'], { encoding: 'utf8' });
+    const lines = (st.stdout || '').trim().split(String.fromCharCode(10));
+    const statTail = lines[lines.length - 1] || '';
+    const m = / (\d+) files? changed/.exec(statTail);
+    const n = m ? +m[1] : 0;
+    if (n > 20) {
+      const lst = spawnSync('git', ['diff', '--cached', '--name-only'], { encoding: 'utf8' });
+      console.error('✘ 拒绝提交：staged ' + n + ' 个文件 > 20 上限（小粽令物理锁）。清单：' + lst.stdout.split(String.fromCharCode(10)).slice(0,25).join(' | '));
+      spawnSync('git', ['reset'], { stdio: 'ignore' });
+      process.exit(1);
+    }
+    if (!n) { console.log('（nothing staged）'); process.exit(0); }
+    console.log('[fsj commit] staged ' + n + ' 文件：' + statTail);
+    const ci = spawnSync('git', ['commit', '-m', msg], { stdio: 'inherit' });
+    process.exit(ci.status ?? 0);
   } else if (cmd === 'org') {
     // 组织索引（Schema v0 第 2 批，已批）：只读拼装 → config/teams.json（索引非正身）
     const o = await import('../src/commands/org.mjs');

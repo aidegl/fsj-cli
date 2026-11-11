@@ -1,6 +1,6 @@
 {
   "schema": "fsj-org/v0",
-  "generated": "2026-11-11T10:58:49.604Z",
+  "generated": "2026-11-11T11:03:33.841Z",
   "note": "索引非正身：正身=AGENTS.md 与 ERP 行（org-schema-v0 §三）",
   "count": 108,
   "members": [
@@ -757,10 +757,7 @@
       "memory_user": "",
       "tree_path": "",
       "constitution": "D:/Item/fsj4/agents/108/038·shangguanziyue/AGENTS.md",
-      "seat_conflict": {
-        "dir": "038",
-        "agents": "37"
-      },
+      "seat_conflict": null,
       "sources": {
         "erp": true,
         "hap_user": false,
@@ -1540,10 +1537,7 @@
       "memory_user": "",
       "tree_path": "",
       "constitution": "D:/Item/fsj4/agents/108/077·chentianshuo/AGENTS.md",
-      "seat_conflict": {
-        "dir": "077",
-        "agents": "76"
-      },
+      "seat_conflict": null,
       "sources": {
         "erp": true,
         "hap_user": false,
@@ -1943,10 +1937,7 @@
       "memory_user": "",
       "tree_path": "",
       "constitution": "D:/Item/fsj4/agents/108/097·shenyanan/AGENTS.md",
-      "seat_conflict": {
-        "dir": "097",
-        "agents": "96"
-      },
+      "seat_conflict": null,
       "sources": {
         "erp": true,
         "hap_user": false,
