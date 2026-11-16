@@ -6,7 +6,8 @@
     "projects": { "id": "6af0502e1f1e6e6e24c0d953", "name": "项目管理" },
     "rules":    { "id": "6af2701ca111c823d0e47450", "name": "规则正身" },
     "xjrz":     { "id": "6af0502e1f1e6e6e24c0d956", "name": "先机日志" },
-    "gwcsb":    { "id": "6af0502e1f1e6e6e24c0d957", "name": "格物测试-勿删" }
+    "gwcsb":    { "id": "6af0502e1f1e6e6e24c0d957", "name": "格物测试-勿删" },
+    "phases":   { "id": "6afa90c7877f74aaa94c790f", "name": "项目阶段" }
   },
   "members": {
     "fields": {
