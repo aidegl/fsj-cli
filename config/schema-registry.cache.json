@@ -1,0 +1,73 @@
+{
+ "fetched_at": "2026-11-18T18:26:23.011Z",
+ "rows": [
+  {
+   "field_name": "aliases",
+   "applies_to": [
+    "md_frontmatter"
+   ],
+   "field_type": [
+    "string_list"
+   ],
+   "required": [
+    "required"
+   ],
+   "check_rule": "至少含中文标题，可追加其他别名",
+   "status": [
+    "active"
+   ],
+   "version": "v0"
+  },
+  {
+   "field_name": "utime",
+   "applies_to": [
+    "md_frontmatter"
+   ],
+   "field_type": [
+    "date_iso"
+   ],
+   "required": [
+    "required"
+   ],
+   "check_rule": "最近实质更新时间，内容变更必刷",
+   "status": [
+    "active"
+   ],
+   "version": "v0"
+  },
+  {
+   "field_name": "ctime",
+   "applies_to": [
+    "md_frontmatter"
+   ],
+   "field_type": [
+    "date_iso"
+   ],
+   "required": [
+    "required"
+   ],
+   "check_rule": "建档时间ISO8601，建档写一次不改",
+   "status": [
+    "active"
+   ],
+   "version": "v0"
+  },
+  {
+   "field_name": "user_rowid",
+   "applies_to": [
+    "md_frontmatter"
+   ],
+   "field_type": [
+    "rowid_ref"
+   ],
+   "required": [
+    "required"
+   ],
+   "check_rule": "必须为HAP user表正身rowid：36位标准UUID（8-4-4-4-12连字符形态），取值源=teams.json user_rowid/ERP user表；勿与worksheet级24位hex id混淆；禁编号/姓名代替",
+   "status": [
+    "active"
+   ],
+   "version": "v0"
+  }
+ ]
+}

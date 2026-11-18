@@ -1,9 +1,12 @@
 // gewu.mjs — 格物 v0 结构扫描器（六科目，证据到 文件:行）
 // 用法：node src/gewu.mjs <树json路径> [树2 …]   输出格物单 MD 到 workspace/
-// 科目：双正身/断链(docRef,fsj://,nodeRef)/权重打架/判据互斥/id违规/空壳
+//       node src/gewu.mjs --refresh-schema          刷新 schema_registry 判据缓存（HAP 正身→本地）
+//       node src/gewu.mjs --md <文件或目录…>        第七科目「schema违规」：全库 MD frontmatter vs 注册表
+// 科目：双正身/断链(docRef,fsj://,nodeRef)/权重打架/判据互斥/id违规/空壳 + schema违规(MD)
 // 严重度：确认（结构性实锤）/苗头（需人工核）。红线：只出单不动刀。
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
-import { dirname, join } from 'path';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, statSync, readdirSync } from 'fs';
+import { dirname, join, extname } from 'path';
+import { spawnSync } from 'child_process';
 
 const scanTree = (treePath) => {
   const raw = readFileSync(treePath, 'utf8');
@@ -107,7 +110,121 @@ const scanTree = (treePath) => {
   return { treePath, items, total: all.length, lineOf };
 };
 
+// ---------- schema_registry 判据缓存（尺子在 ERP，扫描器读缓存；--refresh-schema 刷新） ----------
+const DATA_TABLES = 'D:/Item/fsj-cli/config/data-tables.json';
+const SCHEMA_CACHE = 'D:/Item/fsj-cli/config/schema-registry.cache.json';
+
+const loadSchema = () => {
+  try { return JSON.parse(readFileSync(SCHEMA_CACHE, 'utf8')); }
+  catch { return { rows: [], fetched_at: null, note: '缓存缺失，先跑 --refresh-schema' }; }
+};
+
+const refreshSchema = () => {
+  const t = JSON.parse(readFileSync(DATA_TABLES, 'utf8'));
+  const r = spawnSync('node', [t.hap_mcp_mjs, 'get_record_list', JSON.stringify({
+    appId: t.appId, worksheet_id: t.tables.schema_registry.id, pageSize: 200, pageIndex: 1,
+  })], { encoding: 'utf8' });
+  const d = JSON.parse(r.stdout);
+  const rows = (d.data && d.data.rows) || [];
+  const pick = (v) => Array.isArray(v) ? v.map(x => x.value) : v;
+  const slim = rows.map(r => ({
+    field_name: r.biz_field_name,
+    applies_to: pick(r.biz_applies_to),
+    field_type: pick(r.biz_field_type),
+    required: pick(r.biz_required),
+    check_rule: r.biz_check_rule,
+    status: pick(r.biz_status_reg),
+    version: r.biz_version,
+  }));
+  writeFileSync(SCHEMA_CACHE, JSON.stringify({ fetched_at: new Date().toISOString(), rows: slim }, null, 1) + '\n');
+  console.log('schema_registry 缓存已刷新:', slim.length, '行 @', SCHEMA_CACHE);
+};
+
+// frontmatter 解析（够用子集：key: value / key: [a, b]）
+const parseFm = (raw) => {
+  const m = raw.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  if (!m) return null;
+  const fm = {};
+  for (const line of m[1].split(/\r?\n/)) {
+    const kv = line.match(/^([A-Za-z_][\w-]*)\s*:\s*(.*)$/);
+    if (!kv) continue;
+    let v = kv[2].trim();
+    if (v.startsWith('[') && v.endsWith(']'))
+      v = v.slice(1, -1).split(',').map(s => s.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean);
+    fm[kv[1]] = v;
+  }
+  return fm;
+};
+
+// ---- 第七科目：schema违规（MD frontmatter vs schema_registry active 行） ----
+const scanMd = (targets) => {
+  const { rows, fetched_at, note } = loadSchema();
+  const one = v => Array.isArray(v) ? v[0] : v;
+  const active = (rows || []).filter(r => one(r.status) === 'active'
+    && (Array.isArray(r.applies_to) ? r.applies_to : [r.applies_to]).includes('md_frontmatter'));
+  if (!active.length) throw new Error('schema_registry 判据为空（' + (note || 'fetched ' + fetched_at) + '）——先跑 --refresh-schema');
+  const RULES = {   // check_rule 的机检子集：与注册表 check_rule 文案一一对应
+    user_rowid: v => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(v)),
+    ctime:      v => /^\d{4}-\d{2}-\d{2}/.test(String(v)),
+    utime:      v => /^\d{4}-\d{2}-\d{2}/.test(String(v)),
+    aliases:    v => Array.isArray(v) ? v.length > 0 : !!String(v).trim(),
+  };
+  const files = [];
+  const walk = (p) => {
+    const st = statSync(p);
+    if (st.isDirectory()) readdirSync(p).forEach(x => walk(join(p, x)));
+    else if (extname(p) === '.md') files.push(p);
+  };
+  targets.forEach(walk);
+  const items = [];
+  for (const f of files) {
+    const fm = parseFm(readFileSync(f, 'utf8'));
+    if (fm === null) {
+      items.push({ type: 'schema违规', severity: '确认', target: f, claim: '无 frontmatter（schema_registry 要求 md_frontmatter 必备字段）', evidence: f + ':1' });
+      continue;
+    }
+    for (const r of active) {
+      if (!(r.field_name in fm)) {
+        items.push({ type: 'schema违规', severity: '确认', target: f + ':' + r.field_name, claim: `required 字段「${r.field_name}」缺失（${r.version}：${r.check_rule}）`, evidence: f });
+        continue;
+      }
+      const chk = RULES[r.field_name];
+      if (chk && !chk(fm[r.field_name]))
+        items.push({ type: 'schema违规', severity: '确认', target: f + ':' + r.field_name, claim: `「${r.field_name}」不符合判据：${r.check_rule}（实值 ${JSON.stringify(fm[r.field_name]).slice(0, 60)}）`, evidence: f });
+    }
+  }
+  return { items, files: files.length, schema_rows: active.length, fetched_at };
+};
+
 // ---------- 主流程 ----------
+const _argv = process.argv.slice(2);
+if (_argv[0] === '--refresh-schema') { refreshSchema(); process.exit(0); }
+if (_argv[0] === '--md') {
+  const targets = _argv.slice(1);
+  if (!targets.length) { console.error('用法：node src/gewu.mjs --md <文件或目录…>'); process.exit(1); }
+  const outDir = 'D:/Item/fsj-cli/workspace';
+  mkdirSync(outDir, { recursive: true });
+  const date = new Date(Date.now() + 8 * 3600 * 1000).toISOString().slice(0, 10);
+  const r = scanMd(targets);
+  const gwId = Math.random().toString(36).slice(2, 14);
+  const lines = [
+    '# 格物单 ' + gwId + '（' + date + '）— schema 违规（MD）',
+    '',
+    '- 扫描对象：' + targets.join('、') + '（命中 MD ' + r.files + ' 份）',
+    '- 判据基准：schema_registry 表缓存（HAP 正身，fetched ' + (r.fetched_at || '?') + '，active 行 ' + r.schema_rows + '）',
+    '- 科目：schema违规（required 缺失 / check_rule 机检不符 / 无 frontmatter）',
+    '- 命中：' + r.items.length + ' 条',
+    '- 红线：格物只出单不动刀',
+    '',
+    '| # | 严重度 | 类型 | 涉及条目 | 判定 | 证据(文件:行) |',
+    '|--|--|--|--|--|--|',
+  ];
+  r.items.forEach((it, i) => lines.push(`| ${i + 1} | ${it.severity} | ${it.type} | ${it.target} | ${it.claim} | ${it.evidence} |`));
+  const out = join(outDir, `gewu-${gwId}.md`);
+  writeFileSync(out, lines.join('\n') + '\n');
+  console.log('格物单已出:', out, '（共 ' + r.items.length + ' 条 / MD ' + r.files + ' 份）');
+  process.exit(0);
+}
 const outDir = 'D:/Item/fsj3/teams/zsfy/xiaofeng/workspace/project/fsj/fsj-cli/workspace';
 mkdirSync(outDir, { recursive: true });
 const date = new Date(Date.now() + 8 * 3600 * 1000).toISOString().slice(0, 10);

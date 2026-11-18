@@ -1,5 +1,6 @@
 {
   "appId": "15180c64-690c-4a07-a17b-676a1de09977",
+  "hap_mcp_mjs": "D:/Item/fsj4/agents/108/026·limuchen/workspace/src/mcp/hap-mcp.mjs",
   "tables": {
     "members":  { "id": "6af0502e1f1e6e6e24c0d955", "name": "成员档案" },
     "tasks":    { "id": "6af0502e1f1e6e6e24c0d954", "name": "任务账本" },
