@@ -43,9 +43,12 @@ export class AgentClient {
   // SSE 收件流：自动重连；未确认集由服务端补发（不依赖本地游标）
   async connect() {
     while (!this.closed) {
+      const ac = new AbortController();
+      this._ac = ac;
       try {
         const r = await fetch(this.serverUrl + '/mailbox/inbox/stream', {
           headers: this._headers(this.lastEventId ? { 'Last-Event-ID': this.lastEventId } : {}),
+          signal: ac.signal,
         });
         if (!r.ok || !r.body) throw new Error('stream HTTP ' + r.status);
         const reader = r.body.getReader();
@@ -78,12 +81,16 @@ export class AgentClient {
       if (!this.closed) await sleep(1000 + Math.floor(Math.random() * 2000));
     }
   }
-  close() { this.closed = true; }
+  close() {
+    this.closed = true;
+    try { this._ac?.abort(); } catch {}     // abort 在飞 SSE 流，防旧实例继续用已关的 db
+    try { this.db.close(); } catch {}
+  }
 
   // 收件处理：先落 SQLite → ACK → 需要执行时 claim→handler→result
   async _onMessage(m) {
     const row = this.db.prepare('SELECT state FROM seen WHERE msg_id = ?').get(m.msg_id);
-    if (row && row.state === 'done') return;            // 幂等：处理过，静默
+    if (row && (row.state === 'done' || row.state === 'working')) return;  // 幂等：已处理完 / 本实例处理中（二次推送忽略）
     if (!row) {
       // 先持久化，再 ACK（顺序铁律——反了中间崩溃就是丢消息）
       this.db.prepare('INSERT INTO seen(msg_id, task_id, state, updated_at) VALUES(?,?,?,?)')
@@ -123,8 +130,14 @@ export class AgentClient {
         });
         break;
       } catch (e) {
-        if (e.code === 409) break;  // 旧 generation 被拒/被覆盖：放弃（新执行者负责）
-        await sleep(2000);          // 网络失败：同 result_id 安全重试
+        if (e.code === 409) {
+          if (String(e.body?.error || '').includes('lease expired')) {
+            await this._post('/mailbox/lease/renew', { task_id: m.task_id, generation: gen }).catch(() => {});
+            continue;                   // 执行超租约：续租后同 result_id 重试
+          }
+          break;                        // stale generation / 终态覆盖：放弃（新执行者负责）
+        }
+        await sleep(2000);              // 网络失败：同 result_id 安全重试
       }
     }
     this.db.prepare('UPDATE seen SET state=?, updated_at=? WHERE msg_id=?').run('done', new Date().toISOString(), m.msg_id);

@@ -10,7 +10,9 @@
     "gwcsb":    { "id": "6af0502e1f1e6e6e24c0d957", "name": "格物测试-已废弃" },
     "phases":   { "id": "6afa90c7877f74aaa94c790f", "name": "项目阶段" },
     "pending_ws": { "id": "6afc4b11972a7aeaa3ff63b0", "name": "待批决策台账" },
-    "schema_registry": { "id": "6afdc8d8614348fdc4d7ede5", "name": "Schema字段注册表" }
+    "schema_registry": { "id": "6afdc8d8614348fdc4d7ede5", "name": "Schema字段注册表" },
+    "agent_message_log": { "id": "6b06558ebb16867846ab7c92", "name": "Agent消息流水" },
+    "agent_task_log": { "id": "6b065590a310420b95103477", "name": "Agent任务台账" }
   },
   "members": {
     "fields": {

@@ -45,10 +45,23 @@ async function hapRpc(body, { session = true } = {}) {
     Accept: 'application/json, text/event-stream',
   };
   if (session && hapSid) headers['mcp-session-id'] = hapSid;
-  const r = await fetch(hap.url, { method: 'POST', headers, body: JSON.stringify(body) });
-  const nsid = r.headers.get('mcp-session-id');
-  if (nsid) hapSid = nsid;
-  const text = await r.text();
+  // 通知类（无 id）：202 空响应即成功，发一次直接返回——不走空响应重试/校验（此为 init failed 实锤 bug）
+  if (body.id === undefined) {
+    await fetch(hap.url, { method: 'POST', headers, body: JSON.stringify(body) });
+    return null;
+  }
+  let text = '';
+  for (let i = 0; i < 3; i++) {   // 网络抖动重试（本机网络不稳实测）
+    try {
+      const r = await fetch(hap.url, { method: 'POST', headers, body: JSON.stringify(body) });
+      const nsid = r.headers.get('mcp-session-id');
+      if (nsid) hapSid = nsid;
+      text = await r.text();
+      console.error(`[hap] ${body.method} status=${r.status} len=${text.length}`);
+      if (text) break;
+    } catch (e) { if (i === 2) throw new Error('HAP RPC network: ' + e.message); }
+    await new Promise(rr => setTimeout(rr, 800 * (i + 1)));
+  }
   let parsed = null;
   for (const line of text.split('\n')) if (line.startsWith('data:')) parsed = JSON.parse(line.slice(5));
   if (!parsed && text.trim()) parsed = JSON.parse(text);
@@ -125,7 +138,7 @@ async function loadFromHap() {
   const trows = await hapList(hap.taskWs);
   for (const r of trows) {
     const t = {
-      rowId: r.rowId, task_id: r.biz_task_id, title: r.biz_title, state: sel(r.biz_state) || 'submitted',
+      rowId: r.rowId, task_id: r.biz_task_id, title: r.biz_title, state: sel(r.biz_state_task) || 'submitted',
       generation: Number(r.biz_lease_generation) || 0, lease_until: r.biz_lease_until,
       execution_attempt: Number(r.biz_execution_attempt) || 0, claim_request_id: r.biz_claim_request_id,
       result_id: r.biz_result_id, result: r.biz_result, error: r.biz_error,
@@ -189,8 +202,10 @@ route('POST', /^\/a2a\/message:send$/, async (req, res, body, agent) => {
   if (!msg_id || !to || !payload) return deny(res, 400, 'msg_id/to/payload required');
   const exist = msgIdx.get(msg_id);
   if (exist) { res.writeHead(200, { 'content-type': 'application/json' }); return res.end(JSON.stringify({ ok: true, duplicate: true, message: recordOf(exist) })); }
-  const m = { msg_id, task_id: task_id || msg_id, from: agent, to, state: 'queued', seq: (seqByTo.get(to) || 0) + 1, attempt: 0, payload, error: '' };
+  let m;
   await serial(async () => {
+    // seq 分配必须在串行队列内（并发入口同步读计数器会全部拿同一值——T8 实锤）
+    m = { msg_id, task_id: task_id || msg_id, from: agent, to, state: 'queued', seq: (seqByTo.get(to) || 0) + 1, attempt: 0, payload, error: '' };
     m.rowId = await hapCreate(hap.messageWs, [
       ['biz_msg_id', m.msg_id], ['biz_task_id', m.task_id], ['biz_from', m.from], ['biz_to', m.to],
       ['biz_state', m.state], ['biz_seq', String(m.seq)], ['biz_delivery_attempt', '0'],
@@ -236,37 +251,37 @@ route('POST', /^\/mailbox\/ack$/, async (req, res, body, agent) => {
   res.end(JSON.stringify({ ok: true, message: recordOf(m) }));
 });
 
-// Mailbox：接单（claim_request_id 幂等 + generation 接管递增 + 有效租约拒抢）
+// Mailbox：接单（claim_request_id 幂等 + generation 接管递增 + 有效租约拒抢；校验+写入整体串行——评审要求不可拆成互相竞争的操作）
 route('POST', /^\/mailbox\/tasks\/claim$/, async (req, res, body, agent) => {
   const { task_id, claim_request_id } = body;
   if (!task_id || !claim_request_id) return deny(res, 400, 'task_id/claim_request_id required');
-  let t = taskIdx.get(task_id);
-  if (!t) {
-    t = { rowId: null, task_id, title: body.title || task_id, state: 'submitted', generation: 0,
-      lease_until: null, execution_attempt: 0, claim_request_id: '', result_id: '', result: '', error: '' };
-    taskIdx.set(task_id, t);
-  }
-  if (['completed', 'failed', 'canceled'].includes(t.state)) return deny(res, 409, 'task in terminal state, cannot claim');
-  // 同 agent 同 claim_request_id 重试 → 返回原租约，generation 不递增
-  if (t.claim_request_id === claim_request_id && t.generation > 0) {
-    res.writeHead(200, { 'content-type': 'application/json' });
-    return res.end(JSON.stringify({ ok: true, duplicate: true, task: taskOf(t) }));
-  }
-  const leaseValid = t.lease_until && new Date(t.lease_until.replace(' ', 'T') + 'Z') > new Date();
-  if (leaseValid) return deny(res, 409, `lease held until ${t.lease_until}`);
-  // 接管/首次接单：generation+1
-  t.generation += 1; t.execution_attempt += 1; t.claim_request_id = claim_request_id;
-  t.state = 'working'; t.lease_until = nowIso();
-  await serial(async () => {
-    const pairs = [['biz_state', t.state], ['biz_lease_generation', String(t.generation)],
+  const out = await serial(async () => {
+    let t = taskIdx.get(task_id);
+    if (!t) {
+      t = { rowId: null, task_id, title: body.title || task_id, state: 'submitted', generation: 0,
+        lease_until: null, execution_attempt: 0, claim_request_id: '', result_id: '', result: '', error: '' };
+      taskIdx.set(task_id, t);
+    }
+    if (['completed', 'failed', 'canceled'].includes(t.state))
+      return { status: 409, body: { error: 'task in terminal state, cannot claim' } };
+    // 同 agent 同 claim_request_id 重试 → 返回原租约，generation 不递增
+    if (t.claim_request_id === claim_request_id && t.generation > 0)
+      return { status: 200, body: { ok: true, duplicate: true, task: taskOf(t) } };
+    const leaseValid = t.lease_until && new Date(t.lease_until) > new Date();
+    if (leaseValid) return { status: 409, body: { error: `lease held until ${t.lease_until}` } };
+    // 接管/首次接单：generation+1；租约=现在+LEASE_SECONDS（原写成 nowIso() 等于租约即设即过期——核弹级 bug）
+    t.generation += 1; t.execution_attempt += 1; t.claim_request_id = claim_request_id;
+    t.state = 'working'; t.lease_until = new Date(Date.now() + LEASE_SECONDS * 1000).toISOString();
+    const pairs = [['biz_task_id', t.task_id], ['biz_state_task', t.state], ['biz_lease_generation', String(t.generation)],
       ['biz_lease_until', t.lease_until], ['biz_execution_attempt', String(t.execution_attempt)],
       ['biz_claim_request_id', t.claim_request_id], ['biz_row_utime', today()]];
     if (body.title && !t.rowId) pairs.push(['biz_title', body.title]);
     if (!t.rowId) t.rowId = await hapCreate(hap.taskWs, pairs);
     else await hapUpdate(hap.taskWs, t.rowId, pairs);
+    return { status: 200, body: { ok: true, duplicate: false, task: taskOf(t) } };
   });
-  res.writeHead(200, { 'content-type': 'application/json' });
-  res.end(JSON.stringify({ ok: true, duplicate: false, task: taskOf(t) }));
+  res.writeHead(out.status, { 'content-type': 'application/json' });
+  res.end(JSON.stringify(out.body));
 });
 
 // Mailbox：续租（只延 lease_until，不递增 generation）
@@ -274,30 +289,34 @@ route('POST', /^\/mailbox\/lease\/renew$/, async (req, res, body) => {
   const t = taskIdx.get(body.task_id);
   if (!t) return deny(res, 404, 'task not found');
   if (Number(body.generation) !== t.generation) return deny(res, 409, 'stale generation');
-  t.lease_until = nowIso();
+  t.lease_until = new Date(Date.now() + LEASE_SECONDS * 1000).toISOString();
   await serial(() => hapUpdate(hap.taskWs, t.rowId, [['biz_lease_until', t.lease_until], ['biz_row_utime', today()]]));
   res.writeHead(200, { 'content-type': 'application/json' });
   res.end(JSON.stringify({ ok: true, lease_until: t.lease_until }));
 });
 
-// Mailbox：结果回执（result_id 幂等 + generation fencing 四重校验，单实例串行）
+// Mailbox：结果回执（result_id 幂等 + generation fencing 四重校验，校验+写入整体串行）
 route('POST', /^\/mailbox\/results$/, async (req, res, body) => {
   const { task_id, generation, result_id, result, error, failed } = body;
-  const t = taskIdx.get(task_id);
-  if (!t) return deny(res, 404, 'task not found');
-  if (t.result_id === result_id) { // 同 result_id 重试 → 返回已存结果（响应丢失安全重试）
-    res.writeHead(200, { 'content-type': 'application/json' });
-    return res.end(JSON.stringify({ ok: true, duplicate: true, task: taskOf(t) }));
-  }
-  if (['completed', 'failed', 'canceled'].includes(t.state)) return deny(res, 409, `task already ${t.state} with different result_id — refuse overwrite`);
-  if (Number(generation) !== t.generation) return deny(res, 409, `stale generation ${generation} vs ${t.generation}`);
-  if (t.lease_until && new Date(t.lease_until.replace(' ', 'T') + 'Z') < new Date()) return deny(res, 409, 'lease expired — renew or re-claim');
-  const state = failed ? 'failed' : 'completed';
-  t.state = state; t.result_id = result_id; t.result = result || ''; t.error = error || '';
-  await serial(() => hapUpdate(hap.taskWs, t.rowId, [['biz_state', state], ['biz_result_id', result_id],
-    ['biz_result', typeof result === 'string' ? result : JSON.stringify(result || '')], ['biz_error', t.error], ['biz_row_utime', today()]]));
-  res.writeHead(200, { 'content-type': 'application/json' });
-  res.end(JSON.stringify({ ok: true, duplicate: false, task: taskOf(t) }));
+  const out = await serial(async () => {
+    const t = taskIdx.get(task_id);
+    if (!t) return { status: 404, body: { error: 'task not found' } };
+    if (t.result_id === result_id)   // 同 result_id 重试 → 返回已存结果（响应丢失安全重试）
+      return { status: 200, body: { ok: true, duplicate: true, task: taskOf(t) } };
+    if (['completed', 'failed', 'canceled'].includes(t.state))
+      return { status: 409, body: { error: `task already ${t.state} with different result_id — refuse overwrite` } };
+    if (Number(generation) !== t.generation)
+      return { status: 409, body: { error: `stale generation ${generation} vs ${t.generation}` } };
+    if (t.lease_until && new Date(t.lease_until) < new Date())
+      return { status: 409, body: { error: 'lease expired — renew or re-claim' } };
+    const state = failed ? 'failed' : 'completed';
+    t.state = state; t.result_id = result_id; t.result = result || ''; t.error = error || '';
+    await hapUpdate(hap.taskWs, t.rowId, [['biz_state_task', state], ['biz_result_id', result_id],
+      ['biz_result', typeof result === 'string' ? result : JSON.stringify(result || '')], ['biz_error', t.error], ['biz_row_utime', today()]]);
+    return { status: 200, body: { ok: true, duplicate: false, task: taskOf(t) } };
+  });
+  res.writeHead(out.status, { 'content-type': 'application/json' });
+  res.end(JSON.stringify(out.body));
 });
 
 // ---------- HTTP 骨架 ----------

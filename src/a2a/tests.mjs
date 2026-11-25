@@ -51,21 +51,23 @@ await sleep(1000);
 // T3 幂等执行（同消息重复派发→handler 只执行一次）
 {
   const mid = u();
+  const t3id = 't-t3-' + u().slice(0, 6);   // 独立 task_id：终态任务禁止重新接单是 V1.3 正确语义，不能复用上轮的
   const before = handled.length;
-  await post('/a2a/message:send', { msg_id: mid, task_id: 't-t3', to: 'win-main', payload: { x: 1 } }, TOKM);
+  await post('/a2a/message:send', { msg_id: mid, task_id: t3id, to: 'win-main', payload: { x: 1 } }, TOKM);
   for (let i = 0; i < 20 && handled.length === before; i++) await sleep(500);
   // 模拟服务端重复推：直接重派同 msg_id（入口幂等返回 duplicate，不建新消息）
-  const dup = await post('/a2a/message:send', { msg_id: mid, task_id: 't-t3', to: 'win-main', payload: { x: 1 } }, TOKM);
+  const dup = await post('/a2a/message:send', { msg_id: mid, task_id: t3id, to: 'win-main', payload: { x: 1 } }, TOKM);
   await sleep(1500);
-  ok('T3 幂等执行（重复 msg_id 只执行一次）', dup.body.duplicate === true && handled.filter(x => x === mid).length === 1);
+  ok('T3 幂等执行（重复 msg_id 只执行一次）', dup.body.duplicate === true && handled.filter(x => x === mid).length === 1,
+    `dup=${dup.body.duplicate} 该消息执行次数=${handled.filter(x => x === mid).length} handled总数=${handled.length}`);
 }
 
-// T1 断线补收（win 断开→mac 投 3 条→win 重连→全收）
+// T1 断线补收（win 断开→mac 投 3 条→win 重连→全收；三条消息各自独立 task_id——租约是任务级的，共用 task_id 会互相抢租约）
 {
   win.close();
   await sleep(300);
   const ids = [u(), u(), u()];
-  for (const id of ids) await post('/a2a/message:send', { msg_id: id, task_id: 't-t1', to: 'win-main', payload: { n: 1 } }, TOKM);
+  for (const id of ids) await post('/a2a/message:send', { msg_id: id, task_id: 't-t1-' + id.slice(0, 6), to: 'win-main', payload: { n: 1 } }, TOKM);
   const before = handled.length;
   const win2 = new AgentClient({ serverUrl: BASE, agentId: 'win-main', token: TOKW, dbPath: join(HERE, '../../tmp/a2a-test-win.db'),
     handler: async (m) => { handled.push(m.msg_id); return { result: 'ok' }; } });
