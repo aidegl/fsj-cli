@@ -143,6 +143,9 @@ async function loadFromHap() {
       execution_attempt: Number(r.biz_execution_attempt) || 0, claim_request_id: r.biz_claim_request_id,
       result_id: r.biz_result_id, result: r.biz_result, error: r.biz_error,
     };
+    // owner 回退推导（OpenClaw 补丁语义采纳）：任务执行者=关联消息接收方——重启即恢复归属判定，关闭放行窗口
+    const linked = rows.find(m => m.task_id === t.task_id);
+    if (linked?.biz_to) t.claimed_by = linked.biz_to;
     taskIdx.set(t.task_id, t);
   }
   console.error(`[mailbox] loaded: ${msgIdx.size} msgs, ${taskIdx.size} tasks`);
@@ -289,7 +292,7 @@ route('POST', /^\/mailbox\/tasks\/claim$/, async (req, res, body, agent) => {
 route('POST', /^\/mailbox\/lease\/renew$/, async (req, res, body, agent) => {
   const t = taskIdx.get(body.task_id);
   if (!t) return deny(res, 404, 'task not found');
-  if (t.claimed_by && t.claimed_by !== agent) return deny(res, 403, 'not lease owner');
+  if (t.claimed_by && t.claimed_by !== agent) return deny(res, 403, `not lease owner (owner=${t.claimed_by})`);
   if (Number(body.generation) !== t.generation) return deny(res, 409, 'stale generation');
   t.lease_until = new Date(Date.now() + LEASE_SECONDS * 1000).toISOString();
   await serial(() => hapUpdate(hap.taskWs, t.rowId, [['biz_lease_until', t.lease_until], ['biz_row_utime', today()]]));
@@ -309,7 +312,7 @@ route('POST', /^\/mailbox\/results$/, async (req, res, body, agent) => {
       return { status: 409, body: { error: `task already ${t.state} with different result_id — refuse overwrite` } };
     if (Number(generation) !== t.generation)
       return { status: 409, body: { error: `stale generation ${generation} vs ${t.generation}` } };   // 迟交契约：409 优先（T9）
-    if (t.claimed_by && t.claimed_by !== agent) return { status: 403, body: { error: 'not lease owner' } };
+    if (t.claimed_by && t.claimed_by !== agent) return { status: 403, body: { error: `not lease owner (owner=${t.claimed_by})` } };
     if (t.lease_until && new Date(t.lease_until) < new Date())
       return { status: 409, body: { error: 'lease expired — renew or re-claim' } };
     const state = failed ? 'failed' : 'completed';
