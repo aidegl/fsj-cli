@@ -12,3 +12,5 @@ workspace/chat-sessions.json
 workspace/contacts.json
 world-editor.html
 ws.json
+config/a2a.local.json
+tmp/

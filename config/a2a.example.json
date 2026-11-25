@@ -1,0 +1,17 @@
+{
+  "port": 8787,
+  "publicUrl": "https://n8n.100000whys.cn/a2a",
+  "protocolVersion": "1.0",
+  "leaseSeconds": 300,
+  "hap": {
+    "url": "https://api.mingdao.com/mcp",
+    "pat": "换成实际PAT——本文件是模板，真实配置写 config/a2a.local.json（不进git）",
+    "appId": "15180c64-690c-4a07-a17b-676a1de09977",
+    "messageWs": "agent_message_log_worksheetId",
+    "taskWs": "agent_task_log_worksheetId"
+  },
+  "agents": {
+    "win-main": "token-换成长随机串",
+    "mac-agent": "token-换成长随机串"
+  }
+}
