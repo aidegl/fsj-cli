@@ -29,10 +29,9 @@
 'use strict';
 // ============ 配置 ============
 const WAKE_WORD = 'qivi';
-const API = '';                   // 同源（经 nginx 反代）
+const API = '/qivi';               // nginx location /qivi/ 前缀（同源）
 const statusEl = document.getElementById('status'), logEl = document.getElementById('log');
 const micBtn = document.getElementById('micBtn'), modeBtn = document.getElementById('modeBtn'), talkBtn = document.getElementById('talkBtn');
-const log = (s) => { logEl.textContent = s + '\n' + logEl.textContent; };
 
 // ============ 原版形象（QiviDock）驱动 ============
 // 接口：window.QiviDock = { setEmotion, reaction, setTheme, config, cfg }
@@ -72,7 +71,6 @@ function bindAnalyser(audioEl) {
 }
 
 // ============ 麦克风 + VAD + 录音上传 ============
-const log = (s) => { logEl.textContent = s + '\n' + logEl.textContent; };
 async function openMic() {
   micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
   audioCtxMic = new AudioContext();
@@ -80,7 +78,6 @@ async function openMic() {
   talkBtn.disabled = false;
   statusEl.textContent = '麦克风就绪（模式：' + (mode === 'manual' ? '手动' : '监听·唤醒词「' + WAKE_WORD + '」') + '）';
 }
-let convState = 'listening';
 const VAD_THRESHOLD = 0.04;
 async function startRec() {
   if (listening || !micStream || !window.MediaRecorder) return;

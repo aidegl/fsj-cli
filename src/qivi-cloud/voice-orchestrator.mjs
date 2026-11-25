@@ -226,6 +226,14 @@ route('GET', /^\/config$/, (req, res) => {
   }));
 });
 
+// dock 渲染内核静态托管（页面引用 /qivi-dock.iife.js——公开资产）
+route('GET', /^\/qivi-dock\.iife\.js$/, (req, res) => {
+  try {
+    res.writeHead(200, { 'content-type': 'application/javascript; charset=utf-8' });
+    res.end(readFileSync(join(PUBLIC_DIR, 'qivi-dock.iife.js')));
+  } catch (e) { res.writeHead(404); res.end('/* not found */'); }
+});
+
 function deny(res, code, msg) {
   res.writeHead(code, { 'content-type': 'application/json' });
   res.end(JSON.stringify({ error: msg }));
@@ -242,7 +250,7 @@ function readBody(req, limitMB = 15) {
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://x');
   const agent = authAgent(req);
-  const isPublic = ['/qivi-cloud.html', '/config', '/healthz', '/'].some(p => url.pathname === p);
+  const isPublic = ['/qivi-cloud.html', '/qivi-dock.iife.js', '/config', '/healthz', '/', '/voice'].some(p => url.pathname === p);   // /voice 公开（页面用户无 token；V1.1 加访问控制）
   if (!isPublic && !agent) return deny(res, 401, 'unauthorized');
   for (const r of routes) {
     if (r.method !== req.method) continue;
