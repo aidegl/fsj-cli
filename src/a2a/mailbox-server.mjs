@@ -107,7 +107,7 @@ async function hapList(table) {
 const msgIdx = new Map();      // msg_id -> record（含 rowId/state/seq/to/task_id/result_id…）
 const taskIdx = new Map();     // task_id -> record（含 rowId/state/generation/lease…）
 const seqByTo = new Map();     // to -> last assigned seq
-const sseByTo = new Map();     // to -> res（活跃 SSE 连接）
+const sseByTo = new Map();     // to -> Set<res>（多连接：同身份多进程/会话均可收，投递推全部——"指针指向会话"基础）
 const writeQueue = [];         // 串行写入队列（进程内并发隔离）
 let chain = Promise.resolve();
 const serial = (fn) => { const p = chain.then(fn); chain = p.catch(() => {}); return p; };
@@ -151,16 +151,21 @@ async function loadFromHap() {
   console.error(`[mailbox] loaded: ${msgIdx.size} msgs, ${taskIdx.size} tasks`);
 }
 
-// ---------- 投递（核心：未确认集补发 + 实时推） ----------
+// ---------- 投递（核心：未确认集补发 + 实时推；多连接推全部） ----------
 function sseWrite(to, event, data, id) {
-  const res = sseByTo.get(to);
-  if (!res) return false;
-  try {
-    res.write(`event: ${event}\n`);
-    if (id !== undefined) res.write(`id: ${id}\n`);
-    res.write(`data: ${JSON.stringify(data)}\n\n`);
-    return true;
-  } catch { sseByTo.delete(to); return false; }
+  const conns = sseByTo.get(to);
+  if (!conns || !conns.size) return false;
+  let ok = false;
+  for (const res of [...conns]) {
+    try {
+      res.write(`event: ${event}\n`);
+      if (id !== undefined) res.write(`id: ${id}\n`);
+      res.write(`data: ${JSON.stringify(data)}\n\n`);
+      ok = true;
+    } catch { conns.delete(res); }
+  }
+  if (!conns.size) sseByTo.delete(to);
+  return ok;
 }
 async function deliver(m) {
   const ok = sseWrite(m.to, 'message', recordOf(m), m.seq);
@@ -168,7 +173,7 @@ async function deliver(m) {
   await hapUpdate(hap.messageWs, m.rowId, [['biz_state', m.state], ['biz_row_utime', today()]]);
 }
 async function deliverPending(to, stream) {
-  // 未确认集：state ∈ {queued, sent} 全部补发（不管 Last-Event-ID——业务可靠性不依赖游标）
+  // 未确认集：state ∈ {queued, sent} 全部补发（不管 Last-Event-ID——业务可靠性不依赖游标）；多连接全推
   const pend = [...msgIdx.values()].filter(m => m.to === to && (m.state === 'queued' || m.state === 'sent')).sort((a, b) => a.seq - b.seq);
   for (const m of pend) {
     stream.write(`event: message\nid: ${m.seq}\ndata: ${JSON.stringify(recordOf(m))}\n\n`);
@@ -234,12 +239,13 @@ route('GET', /^\/a2a\/tasks\/([^/]+)$/, (req, res, _b, _a, ms) => {
 route('GET', /^\/mailbox\/inbox\/stream$/, async (req, res, _b, agent, _m, url) => {
   res.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-cache', connection: 'keep-alive' });
   res.write(`event: hello\ndata: {"agent":"${agent}","protocol":"mailbox/1.3"}\n\n`);
-  sseByTo.set(agent, res);
+  if (!sseByTo.has(agent)) sseByTo.set(agent, new Set());
+  sseByTo.get(agent).add(res);   // 多连接：同身份多进程/会话各自持有流，投递广播
   const lastId = req.headers['last-event-id'];
   const n = await deliverPending(agent, res);
-  console.error(`[inbox] ${agent} connected (last-event-id=${lastId || '-'}, pending=${n})`);
+  console.error(`[inbox] ${agent} connected (last-event-id=${lastId || '-'}, pending=${n}, conns=${sseByTo.get(agent)?.size || 1})`);
   const hb = setInterval(() => { try { res.write(`: hb ${Date.now()}\n\n`); } catch {} }, 15000);
-  req.on('close', () => { clearInterval(hb); if (sseByTo.get(agent) === res) sseByTo.delete(agent); });
+  req.on('close', () => { clearInterval(hb); const s = sseByTo.get(agent); if (s) { s.delete(res); if (!s.size) sseByTo.delete(agent); } });
 });
 
 // Mailbox：ACK（仅 delivered）
