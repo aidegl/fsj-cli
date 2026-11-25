@@ -78,8 +78,15 @@ Mac 不跑大模型。需要推理时把请求**转投 win-main**：
 
 ```js
 const r = await c.send('win-main', { type: 'quickthink', prompt: '你的问题', system: '简短回答' });
-// 轮询 GET /a2a/tasks/{r.message.task_id} 直到 completed，result 里就是 qwen3:14b 的回答
+const taskId = r.message.task_id;
+// 回执查询（重要）：nginx location /a2a/ 会剥前缀，外网完整路径里 a2a 出现两次——不是笔误
+const q = await fetch(`https://n8n.100000whys.cn/a2a/a2a/tasks/${taskId}`, {
+  headers: { Authorization: 'Bearer <你的token>' },
+});
+const t = await q.json();   // t.state==='completed' 时 t.result 即 qwen3:14b 的回答
 ```
+
+**同规则适用于一切任务查询**：`{serverUrl}/a2a/tasks/{task_id}`（serverUrl 已含 /a2a，路由再带 /a2a）。第二课 hello 的回执同理——在 task.result 里查，win-main 不会反向推消息。
 
 ## 七、执行顺序铁律（四句话记牢）
 
