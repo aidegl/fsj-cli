@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>qivi 云端小人 V1.0（原版形象）</title>
+<title>qivi 云端小人 V1.0.1（原版形象）</title>
 <style>
   body { margin: 0; background: #0a0a12; color: #e8e8f0; font-family: system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
   #stage { margin-top: 8vh; min-height: 260px; min-width: 280px; display: flex; align-items: center; justify-content: center; }
@@ -29,97 +29,127 @@
 'use strict';
 // ============ 配置 ============
 const WAKE_WORD = 'qivi';
+const WAKE_VARIANTS = ['qivi', 'kiwi', 'kivi', 'q i v i', '奇一'];
 const API = '/qivi';               // nginx location /qivi/ 前缀（同源）
 const statusEl = document.getElementById('status'), logEl = document.getElementById('log');
 const micBtn = document.getElementById('micBtn'), modeBtn = document.getElementById('modeBtn'), talkBtn = document.getElementById('talkBtn');
+const log = (s) => { logEl.textContent = s + '\n' + logEl.textContent; };
 
 // ============ 原版形象（QiviDock）驱动 ============
-// 接口：window.QiviDock = { setEmotion, reaction, setTheme, config, cfg }
-// 情绪由语音管线驱动：说话时 reaction/happy，静默回默认。
 const Q = window.QiviDock;
 const setEmotion = (e) => { try { Q && Q.setEmotion && Q.setEmotion(e); } catch (err) { log('setEmotion: ' + err.message); } };
 
-// ============ 语音状态（与服务端镜像） ============
+// ============ 状态 ============
 let mode = 'manual';             // manual | listen
-let convState = 'listening';     // listening | conversation（服务端权威，此处镜像展示）
-let micStream = null, audioCtxMic = null, mediaRecorder = null, chunks = [], listening = false;
+let convState = 'listening';     // 与服务端镜像
+let micStream = null, pcmCtx = null, pcmProc = null;
+let recording = false, pcmChunks = [], liveAnalyser = null, liveBuf = null;
+const VAD_THRESHOLD = 0.04;
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
-// ============ 播放（TTS 音频）+ 口型/情绪联动 ============
-async function playReply(b64, replyText) {
-  const el = new Audio('data:audio/mp3;base64,' + b64);
-  // 说话期间：小人进入 reaction（dock 内核自带语音幅值颤动）
-  try { Q && Q.reaction && Q.reaction('speak'); } catch {}
-  setEmotion('happy');
-  bindAnalyser(el);
-  await el.play().catch(() => { statusEl.textContent = '点一次页面任意处后重试播放（自动播放策略）'; });
-  el.onended = () => { setEmotion('default'); };
+// ============ 开麦：PCM 16k 采集（直发后端 pcm_b64——后端零改动） ============
+async function openMic() {
+  micStream = await navigator.mediaDevices.getUserMedia({ audio: { sampleRate: 16000, channelCount: 1, echoCancellation: true, noiseSuppression: true } });
+  pcmCtx = new AudioContext({ sampleRate: 16000 });
+  const src = pcmCtx.createMediaStreamSource(micStream);
+  pcmProc = pcmCtx.createScriptProcessor(4096, 1, 1);
+  src.connect(pcmProc);
+  const mute = pcmCtx.createGain(); mute.gain.value = 0;   // 防啸叫：处理后静音落喇叭
+  pcmProc.connect(mute); mute.connect(pcmCtx.destination);
+  liveAnalyser = pcmCtx.createAnalyser(); liveAnalyser.fftSize = 512;
+  src.connect(liveAnalyser);
+  liveBuf = new Uint8Array(liveAnalyser.fftSize);
+  pcmProc.onaudioprocess = (e) => {
+    if (!recording) return;
+    const f = e.inputBuffer.getChannelData(0);
+    const i16 = new Int16Array(f.length);
+    for (let i = 0; i < f.length; i++) { const v = Math.max(-1, Math.min(1, f[i])); i16[i] = v < 0 ? v * 32768 : v * 32767; }
+    pcmChunks.push(i16);
+  };
+  micBtn.disabled = true; micBtn.textContent = '🎤 已开启';
+  talkBtn.disabled = false;
+  statusEl.textContent = '麦克风就绪（PCM 16k · 模式：' + (mode === 'manual' ? '手动' : '监听·唤醒词「' + WAKE_WORD + '」') + '）';
 }
-let analyser = null, playCtx = null;
-function bindAnalyser(audioEl) {
+
+// ============ VAD 循环（监听态：振幅超阈值自动录音） ============
+(function vadLoop() {
+  if (liveAnalyser && mode === 'listen' && !recording) {
+    liveBuf && liveAnalyser.getByteTimeDomainData(liveBuf);
+    let peak = 0; for (const v of (liveBuf || [])) peak = Math.max(peak, Math.abs(v - 128) / 128);
+    if (peak > VAD_THRESHOLD) startRec();
+  }
+  setTimeout(vadLoop, 300);
+})();
+
+// ============ 停止采集 → PCM 拼接 → 上传 ============
+function stopPcm() {
+  recording = false;
+  const total = pcmChunks.reduce((s, c) => s + c.length, 0);
+  const pcm = new Int16Array(total);
+  let off = 0; for (const c of pcmChunks) { pcm.set(c, off); off += c.length; }
+  pcmChunks = [];
+  return pcm;
+}
+
+async function sendVoice(pcm) {
+  statusEl.textContent = '识别中…';
+  setEmotion('thinking');
+  try {
+    const r = await fetch(API + '/voice', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ agent: 'mac-agent', pcm_b64: b64FromI16(pcm) }) });
+    const j = await r.json();
+    if (j.error) { log('错误: ' + j.error); statusEl.textContent = '出错'; setEmotion('default'); return; }
+    convState = j.state;
+    if (!j.matched && j.asr) { statusEl.textContent = '监听中（未含唤醒词）'; log('ASR: ' + j.asr + '（未命中，忽略）'); setEmotion('default'); return; }
+    statusEl.textContent = 'qivi：' + (j.reply_text || '').slice(0, 60);
+    log('qivi：' + j.reply_text);
+    if (j.reply_audio_b64) { await playReply(j.reply_audio_b64); }
+    else { setEmotion('default'); log('（TTS 未出音频：' + (j.tts_error || '无') + '）'); }
+  } catch (e) { log('链路错误: ' + e.message); statusEl.textContent = '链路错误'; setEmotion('default'); }
+}
+function b64FromI16(i16) {
+  const bytes = new Uint8Array(i16.buffer, i16.byteOffset, i16.byteLength);
+  let s = ''; const CH = 0x8000;
+  for (let i = 0; i < bytes.length; i += CH) s += String.fromCharCode.apply(null, bytes.subarray(i, i + CH));
+  return btoa(s);
+}
+
+// ============ 播放 TTS 回执 + 情绪联动 ============
+async function playReply(b64) {
+  const el = new Audio('data:audio/mp3;base64,' + b64);
+  try { Q && Q.reaction && Q.reaction('speak'); } catch (e) {}
+  setEmotion('happy');
+  bindPlayAnalyser(el);
+  await el.play().catch(() => { statusEl.textContent = '点一次页面任意处后重试播放'; });
+  el.onended = () => setEmotion('default');
+}
+let playCtx = null, playAn = null, playBuf = null;
+function bindPlayAnalyser(el) {
   playCtx = playCtx || new AudioContext();
-  const src = playCtx.createMediaElementSource(audioEl);
-  const an = playCtx.createAnalyser(); an.fftSize = 256;
-  src.connect(an); an.connect(playCtx.destination);
-  // dock 内核自带音频幅值分析（取证：AudioContext/createAnalyser/getByteFrequencyData 三件套在 iife 内）；
-  // 此处 AnalyserNode 供页面侧口型联动备用（V1.0 口型主要由 dock 内核按情绪/语音处理）。
-  const buf = new Uint8Array(an.frequencyBinCount);
+  const src = playCtx.createMediaElementSource(el);
+  playAn = playCtx.createAnalyser(); playAn.fftSize = 256;
+  src.connect(playAn); playAn.connect(playCtx.destination);
+  playBuf = new Uint8Array(playAn.frequencyBinCount);
   (function loop() {
-    if (an) { an.getByteFrequencyData(buf); }
+    if (playAn) { playAn.getByteFrequencyData(playBuf); let s = 0; for (const v of playBuf) s += v * v; amp = Math.min(1, Math.sqrt(s / playBuf.length) / 96); mouth = Math.min(1, amp * 2.2); }
     requestAnimationFrame(loop);
   })();
 }
+let amp = 0, mouth = 0;
 
-// ============ 麦克风 + VAD + 录音上传 ============
-async function openMic() {
-  micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-  audioCtxMic = new AudioContext();
-  micBtn.disabled = true; micBtn.textContent = '🎤 已开启';
-  talkBtn.disabled = false;
-  statusEl.textContent = '麦克风就绪（模式：' + (mode === 'manual' ? '手动' : '监听·唤醒词「' + WAKE_WORD + '」') + '）';
-}
-const VAD_THRESHOLD = 0.04;
+// ============ 录音流程（手动/监听共用） ============
 async function startRec() {
-  if (listening || !micStream || !window.MediaRecorder) return;
-  listening = true;
-  chunks = [];
-  mediaRecorder = new MediaRecorder(micStream, { mimeType: MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : '' });
-  mediaRecorder.ondataavailable = e => chunks.push(e.data);
-  mediaRecorder.onstop = async () => {
-    listening = false;
-    const blob = new Blob(chunks, { type: mediaRecorder.mimeType || 'audio/webm' });
-    if (blob.size < 2000) return;
-    statusEl.textContent = '识别中…';
-    setEmotion('thinking');
-    try {
-      const b64 = await blobToB64(blob);
-      const r = await fetch(API + '/voice', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ agent: 'mac-agent', audio_b64: b64, audio_format: 'webm' }) });
-      const j = await r.json();
-      if (j.error) { log('错误: ' + j.error); statusEl.textContent = '出错'; setEmotion('default'); return; }
-      convState = j.state;
-      if (!j.matched && j.asr) { statusEl.textContent = '监听中（未含唤醒词「' + WAKE_WORD + '」）'; setEmotion('default'); return; }
-      statusEl.textContent = 'qivi：' + (j.reply_text || '(TTS 未配置，仅文本)');
-      if (j.reply_audio_b64) { await playReply(j.reply_audio_b64, j.reply_text); }
-      else { setEmotion('default'); log('（TTS 未配置——文本回执：' + (j.reply_text || '').slice(0, 100) + '）'); }
-    } catch (e) { log('链路错误: ' + e.message); statusEl.textContent = '链路错误'; setEmotion('default'); }
-  };
-  mediaRecorder.start();
+  if (recording || !pcmProc) return;
+  recording = true; pcmChunks = [];
   statusEl.textContent = '聆听中…';
-  const an = audioCtxMic.createAnalyser(); audioCtxMic.createMediaStreamSource(micStream).connect(an);
-  const buf = new Uint8Array(an.fftSize);
+  const liveCopy = liveAnalyser, liveB = liveBuf;
   let silent = 0;
   const check = () => {
-    if (!listening) return;
-    an.getByteTimeDomainData(buf);
-    let peak = 0; for (const v of buf) peak = Math.max(peak, Math.abs(v - 128) / 128);
-    if (peak < VAD_THRESHOLD / 2) { if (++silent > 36) { mediaRecorder.stop(); return; } } else silent = 0;
-    requestAnimationFrame(check);
+    if (!recording) return;
+    if (liveCopy) { liveCopy.getByteTimeDomainData(liveB); let peak = 0; for (const v of liveB) peak = Math.max(peak, Math.abs(v - 128) / 128); if (peak < VAD_THRESHOLD / 2) { if (++silent > 36) { const pcm = stopPcm(); if (pcm.length > 3200) sendVoice(pcm); else { statusEl.textContent = '（太短）'; recording = false; } return; } } else silent = 0; }
+    setTimeout(check, 100);
   };
   setTimeout(check, 400);
-}
-function blobToB64(blob) {
-  return new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result.split(',')[1]); r.readAsDataURL(blob); });
 }
 
 // ============ 控件 ============
@@ -130,22 +160,12 @@ modeBtn.onclick = () => {
   modeBtn.classList.toggle('active', mode === 'listen');
   statusEl.textContent = '模式已切换：' + mode;
 };
-talkBtn.onmousedown = talkBtn.ontouchstart = startRec;
-// VAD 循环（监听态）
-(function vadLoop() {
-  if (micStream && mode === 'listen' && !listening && audioCtxMic) {
-    const an = audioCtxMic.createAnalyser(); audioCtxMic.createMediaStreamSource(micStream).connect(an);
-    const buf = new Uint8Array(an.fftSize);
-    an.getByteTimeDomainData(buf);
-    let peak = 0; for (const v of buf) peak = Math.max(peak, Math.abs(v - 128) / 128);
-    if (peak > VAD_THRESHOLD) startRec();
-  }
-  setTimeout(vadLoop, 300);
-})();
+talkBtn.onmousedown = talkBtn.ontouchstart = () => { if (!recording) startRec(); };
+talkBtn.onmouseup = talkBtn.ontouchend = () => { if (recording) { const pcm = stopPcm(); if (pcm.length > 3200) sendVoice(pcm); } };
 
 // 初始化
 fetch(API + '/config').then(r => r.json()).then(j => {
-  statusEl.textContent = '就绪（唤醒词「' + j.wake_word + '」· TTS ' + (j.tts_ready ? '已配置' : '未配置——仅文本模式）');
+  statusEl.textContent = '就绪（唤醒词「' + j.wake_word + '」· TTS ' + (j.tts_ready ? '已配置' : '未配置——仅文本模式') + '）';
 }).catch(() => { statusEl.textContent = '服务未连接'; });
 </script>
 </body>
