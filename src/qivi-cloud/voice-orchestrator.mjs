@@ -96,7 +96,13 @@ function doubaoTts(text) {
         } else payload = l > rest.length ? rest : rest.slice(0, l);
       }
       if (mt === 0xB && event === 352) audio.push(payload);              // 音频块
-      else if (mt === 0xF) { clearTimeout(timer); finish(() => reject(new Error('豆包 TTS 错误帧: ' + payload.slice(0, 200).toString()))); }
+      else if (mt === 0xF) {
+        // 错误帧（无 session_id）：不走 l<128 sid 启发式——会误吞错误 JSON（梦瑶实锤"空错误帧"根因），直接解剩余字节
+        let p2 = pos;
+        if (b.length - p2 >= 4) { const l2 = b.readUInt32BE(p2); payload = b.slice(p2 + 4, p2 + 4 + l2); }
+        else payload = b.slice(pos);
+        clearTimeout(timer); finish(() => reject(new Error('豆包 TTS 错误帧: ' + payload.slice(0, 200).toString())));
+      }
       else if (event === 152 || event === 153) {
         clearTimeout(timer);
         const mp3 = Buffer.concat(audio);
