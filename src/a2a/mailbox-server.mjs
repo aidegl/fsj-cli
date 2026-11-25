@@ -15,7 +15,7 @@ const cfg = JSON.parse(readFileSync(CONFIG_PATH, 'utf8'));
 // cfg = { port, hap: {url, pat, appId, messageWs, taskWs}, agents: {agentId: token},
 //         leaseSeconds, deliveryTimeoutMs, protocolVersion }
 const PORT = Number(process.env.A2A_PORT || cfg.port || 8787);
-const LEASE_SECONDS = Number(cfg.leaseSeconds || 300);          // 执行租约
+const LEASE_SECONDS = Number(process.env.A2A_LEASE || cfg.leaseSeconds || 300);          // 执行租约（测试用 A2A_LEASE 调小）
 const nowIso = () => new Date().toISOString();
 const today = () => nowIso().slice(0, 10);
 const uuid = () => crypto.randomUUID();
@@ -272,6 +272,7 @@ route('POST', /^\/mailbox\/tasks\/claim$/, async (req, res, body, agent) => {
     // 接管/首次接单：generation+1；租约=现在+LEASE_SECONDS（原写成 nowIso() 等于租约即设即过期——核弹级 bug）
     t.generation += 1; t.execution_attempt += 1; t.claim_request_id = claim_request_id;
     t.state = 'working'; t.lease_until = new Date(Date.now() + LEASE_SECONDS * 1000).toISOString();
+    t.claimed_by = agent;   // 持有者记录（results/renew owner 校验用；V1 内存版，重启后由首个 claim 重建）
     const pairs = [['biz_task_id', t.task_id], ['biz_state_task', t.state], ['biz_lease_generation', String(t.generation)],
       ['biz_lease_until', t.lease_until], ['biz_execution_attempt', String(t.execution_attempt)],
       ['biz_claim_request_id', t.claim_request_id], ['biz_row_utime', today()]];
@@ -285,9 +286,10 @@ route('POST', /^\/mailbox\/tasks\/claim$/, async (req, res, body, agent) => {
 });
 
 // Mailbox：续租（只延 lease_until，不递增 generation）
-route('POST', /^\/mailbox\/lease\/renew$/, async (req, res, body) => {
+route('POST', /^\/mailbox\/lease\/renew$/, async (req, res, body, agent) => {
   const t = taskIdx.get(body.task_id);
   if (!t) return deny(res, 404, 'task not found');
+  if (t.claimed_by && t.claimed_by !== agent) return deny(res, 403, 'not lease owner');
   if (Number(body.generation) !== t.generation) return deny(res, 409, 'stale generation');
   t.lease_until = new Date(Date.now() + LEASE_SECONDS * 1000).toISOString();
   await serial(() => hapUpdate(hap.taskWs, t.rowId, [['biz_lease_until', t.lease_until], ['biz_row_utime', today()]]));
@@ -296,7 +298,7 @@ route('POST', /^\/mailbox\/lease\/renew$/, async (req, res, body) => {
 });
 
 // Mailbox：结果回执（result_id 幂等 + generation fencing 四重校验，校验+写入整体串行）
-route('POST', /^\/mailbox\/results$/, async (req, res, body) => {
+route('POST', /^\/mailbox\/results$/, async (req, res, body, agent) => {
   const { task_id, generation, result_id, result, error, failed } = body;
   const out = await serial(async () => {
     const t = taskIdx.get(task_id);
@@ -306,7 +308,8 @@ route('POST', /^\/mailbox\/results$/, async (req, res, body) => {
     if (['completed', 'failed', 'canceled'].includes(t.state))
       return { status: 409, body: { error: `task already ${t.state} with different result_id — refuse overwrite` } };
     if (Number(generation) !== t.generation)
-      return { status: 409, body: { error: `stale generation ${generation} vs ${t.generation}` } };
+      return { status: 409, body: { error: `stale generation ${generation} vs ${t.generation}` } };   // 迟交契约：409 优先（T9）
+    if (t.claimed_by && t.claimed_by !== agent) return { status: 403, body: { error: 'not lease owner' } };
     if (t.lease_until && new Date(t.lease_until) < new Date())
       return { status: 409, body: { error: 'lease expired — renew or re-claim' } };
     const state = failed ? 'failed' : 'completed';
@@ -325,12 +328,14 @@ function readBody(req) {
 }
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://x');
+  const agent = authAgent(req);
+  const isCard = url.pathname === '/.well-known/agent-card.json';
+  if (!isCard && !agent) return deny(res, 401, 'unauthorized');   // 公网边界：除发现端点外强制 Bearer（OpenClaw 公网部署实锤缺口，已合入上游）
   for (const r of routes) {
     if (r.method !== req.method) continue;
     const m = url.pathname.match(r.pattern);
     if (!m) continue;
     try {
-      const agent = authAgent(req);
       const body = req.method === 'POST' ? await readBody(req) : {};
       await r.fn(req, res, body, agent, m, url);
     } catch (e) {

@@ -23,7 +23,7 @@ const ok = (n, c, d = '') => { c ? pass++ : fail++; console.log(`${c ? 'PASS' : 
 
 // 起 server 子进程
 const srv = spawn(process.execPath, [join(HERE, 'mailbox-server.mjs')], {
-  env: { ...process.env, A2A_PORT: String(PORT), A2A_CONFIG: process.env.A2A_CONFIG || join(HERE, '../../config/a2a.local.json') },
+  env: { ...process.env, A2A_PORT: String(PORT), A2A_CONFIG: process.env.A2A_CONFIG || join(HERE, '../../config/a2a.local.json'), A2A_LEASE: '8' },
   stdio: ['ignore', 'pipe', 'pipe'],
 });
 srv.stderr.on('data', d => process.stderr.write('[srv] ' + d));
@@ -124,7 +124,7 @@ const result = (task_id, gen, rid, r, tok) => post('/mailbox/results', { task_id
   const g1 = c1.body.task?.generation;
   const blocked = await claim(tid, u(), TOKM);               // 租约有效期内 mac 抢 → 409
   ok('T12a 有效租约禁止接管', blocked.status === 409);
-  await sleep((CFG.leaseSeconds || 300) * 1000 + 1500);      // 等租约过期（测试配置小值）
+  await sleep(8 * 1000 + 1500);                              // 等租约过期（server 由 A2A_LEASE=8 启动）
   const c2 = await claim(tid, u(), TOKM);                    // mac 接管 gen=2
   const g2 = c2.body.task?.generation;
   ok('T12b 过期后接管成功 generation+1', c2.status === 200 && g2 === g1 + 1, `g1=${g1} g2=${g2}`);
